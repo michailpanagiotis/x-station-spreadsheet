@@ -32,13 +32,13 @@ indices = [{
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
-    'section': 'OSCS - MIXER', 'label': 'OCTAVE'
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH'
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH'
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'SYNC'
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 1',
 }, {
     'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 2',
 }, {
@@ -53,6 +53,266 @@ indices = [{
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 3',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Noise',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Noise',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': 'FILTERS', 'label': 'FREQUENCY', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'RESONANCE', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'KEY TRACK', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'ENV DEPTH', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'LFO DEPTH', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'OVERDRIVE', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'SLOPE', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'TYPE', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'HPF ON', 'predicate': '1',
+}, {
+    'section': 'FILTERS', 'label': 'FREQUENCY', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'RESONANCE', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'KEY TRACK', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'ENV DEPTH', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'LFO DEPTH', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'OVERDRIVE', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'SLOPE', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'TYPE', 'predicate': '2',
+}, {
+    'section': 'FILTERS', 'label': 'HPF ON', 'predicate': '2',
+}, {
+    'section': 'LFOS', 'label': 'SPEED', 'predicate': '1',
+}, {
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '1',
+}, {
+    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '1',
+}, {
+    'section': 'LFOS', 'label': 'DEST', 'predicate': '1',
+}, {
+    'section': 'LFOS', 'label': 'SPEED', 'predicate': '2',
+}, {
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '2',
+}, {
+    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '2',
+}, {
+    'section': 'LFOS', 'label': 'DEST', 'predicate': '2',
+}, {
+    'section': 'LFOS', 'label': 'SPEED', 'predicate': '3',
+}, {
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '3',
+}, {
+    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '3',
+}, {
+    'section': 'LFOS', 'label': 'DEST', 'predicate': '3',
+}, {
+    'section': 'AMP ENV', 'label': 'ATTACK',
+}, {
+    'section': 'AMP ENV', 'label': 'DECAY',
+}, {
+    'section': 'AMP ENV', 'label': 'SUSTAIN',
+}, {
+    'section': 'AMP ENV', 'label': 'RELEASE',
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'ATTACK',
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'DECAY',
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'SUSTAIN',
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'RELEASE',
+}, {
+    'section': 'AMP ENV', 'label': 'MONO / POLY', 'predicate': 'Mod'
+}, {
+    'section': 'AMP ENV', 'label': 'GATE', 'predicate': 'Mod'
+}, {
+    'section': 'AMP ENV', 'label': 'HOLD', 'predicate': 'Mod'
+}, {
+    'section': 'AMP ENV', 'label': 'ON / OFF', 'predicate': 'Mod'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'predicate': 'Mod'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'predicate': 'Mod'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'predicate': 'Mod'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'predicate': 'Mod'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'predicate': 'Mod'
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': 'AMP ENV', 'label': 'MONO / POLY', 'predicate': 'Env 3'
+}, {
+    'section': 'AMP ENV', 'label': 'GATE', 'predicate': 'Env 3'
+}, {
+    'section': 'AMP ENV', 'label': 'HOLD', 'predicate': 'Env 3'
+}, {
+    'section': 'AMP ENV', 'label': 'ON / OFF', 'predicate': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'predicate': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'predicate': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'predicate': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'predicate': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'predicate': 'Env 3'
+}, {
+    'section': 'VELOCITY', 'label': 'VELOCITY'
+}, {
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Amp',
+}, {
+   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Amp',
+}, {
+   'section': '??? VELOCITY', 'label': '???', 'predicate': 'Amp',
+}, {
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Mod',
+}, {
+   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Mod',
+}, {
+   'section': '??? VELOCITY', 'label': '???', 'predicate': 'Mod',
+}, {
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Env 3',
+}, {
+   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Env 3',
+}, {
+   'section': 'ARP', 'label': 'TEMPO',
+}, {
+   'section': 'ARP', 'label': 'ON',
+}, {
+   'section': 'ARP', 'label': 'LATCH',
+}, {
+   'section': 'EFFECTS', 'label': 'LEVEL',
+}, {
+   'section': 'EFFECTS', 'label': 'SELECT',
+}, {
+   'section': 'EFFECTS', 'label': 'CONTROL',
+}, {
+   'section': 'EXTERNAL', 'label': 'SUSTAIN',
+}, {
+   'section': 'EXTERNAL', 'label': 'EXPRESSION',
+}, {
+   'section': 'PITCH/MOD', 'label': 'PITCH BEND',
+}, {
+   'section': 'PITCH/MOD', 'label': 'MOD WHEEL',
+}, {
+   'section': 'TOUCHPAD', 'label': 'X',
+}, {
+   'section': 'TOUCHPAD', 'label': 'Y',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': '???', 'label': '???',
+}, {
+    'section': 'TRANSPORT', 'label': 'STOP',
+}, {
+    'section': 'TRANSPORT', 'label': 'PLAY',
+}, {
+    'section': 'TRANSPORT', 'label': 'REC',
+}, {
+    'section': 'TRANSPORT', 'label': 'FF',
+}, {
+    'section': 'TRANSPORT', 'label': 'RW',
+}, {
+    'section': '???', 'label': '???',
 }]
 
 class NumericValue(dict):
@@ -197,7 +457,8 @@ class SingleControl(dict):
     @property
     def label(self):
         if self._idx < len(indices):
-            return '%s > %s\t' % (indices[self._idx]['section'], indices[self._idx]['label'])
+            predicate = '(%s)' % indices[self._idx]['predicate'] if 'predicate' in indices[self._idx] else ''
+            return '%s %s > %s\t' % (indices[self._idx]['section'], predicate, indices[self._idx]['label'])
         return ''
 
     def __len__(self):
