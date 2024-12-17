@@ -13,6 +13,48 @@ packet_size = 52
 packet_offset = 40
 buffer = []
 
+indices = [{
+    'section': 'OSCS - MIXER', 'label': 'PORTAMENTO'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'UNISON'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 1',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 1',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 1',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 1',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 1',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 2',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}]
+
 class NumericValue(dict):
     def __init__(self, name, byte, hidden=False):
         self._name = name
@@ -84,7 +126,7 @@ class StringValue(dict):
         return len(self._bytes)
 
 class SingleControl(dict):
-    def __init__(self, position, cmd, name_length=16):
+    def __init__(self, idx, position, cmd, name_length=16):
         if len(cmd) != 52:
             raise Exception('bad length')
 
@@ -96,21 +138,19 @@ class SingleControl(dict):
 
         cmd = cmd[name_length:]
 
-        fields.append(NumericValue('Ct', cmd.pop(0)))
+        fields.append(NumericValue('Control Type', cmd.pop(0)))
         fields.append(NumericValue('Low|Template|Velocity|MMC Command', cmd.pop(0)))
         fields.append(NumericValue('Hi', cmd.pop(0)))
         fields.append(BitMap('Ports', 'Button type', cmd.pop(0)))
         fields.append(NumericValue('PotCtrl', cmd.pop(0)))
         fields.append(NumericValue('DisplayType', cmd.pop(0)))
-        fields.append(NumericValue('NRPN MSBank Num', cmd.pop(0)))
+        fields.append(NumericValue('NRPN|RPN MSBank Num', cmd.pop(0)))
         fields.append(NumericValue('CC|Note', cmd.pop(0)))
-
         fields.append(NumericValue('Channel|Device id', cmd.pop(0)))
         fields.append(NumericValue('Template|Velocity|MMC Command', cmd.pop(0)))
         fields.append(NumericValue('unknown1', cmd.pop(0)))
         fields.append(NumericValue('unknown2', cmd.pop(0)))
         fields.append(NumericValue('unknown3', cmd.pop(0)))
-
         fields.append(SysexValue('sx1', cmd.pop(0)))
         fields.append(SysexValue('sx2', cmd.pop(0)))
         fields.append(SysexValue('sx3', cmd.pop(0)))
@@ -129,15 +169,15 @@ class SingleControl(dict):
         fields.append(SysexValue('sx16', cmd.pop(0)))
         fields.append(SysexValue('sx17', cmd.pop(0)))
         fields.append(SysexValue('sx18', cmd.pop(0)))
-
         fields.append(NumericValue('Step', cmd.pop(0)))
+        fields.append(ZeroPadding('Padding', 4))
 
-        fields.append(ZeroPadding('zeros', 4))
         cmd = cmd[4:]
 
         if len(cmd) != 0:
             raise Exception('non parsed fields')
 
+        self._idx = idx
         self._position = position
         self._name = name
         self._fields = fields
@@ -154,6 +194,12 @@ class SingleControl(dict):
             _bytes.extend(field._bytes)
         return _bytes
 
+    @property
+    def label(self):
+        if self._idx < len(indices):
+            return '%s > %s\t' % (indices[self._idx]['section'], indices[self._idx]['label'])
+        return ''
+
     def __len__(self):
         return len(self._bytes)
 
@@ -161,7 +207,7 @@ class Template():
     def __init__(self, file):
         offset = 405
         line_size = 52
-        self.lines = []
+        self.controls = []
         self.footer = []
         with open(file, "rb") as f:
             all_bytes = f.read()
@@ -173,38 +219,38 @@ class Template():
                 break;
 
             line = all_bytes[x : x + line_size]
-            control = SingleControl(x, line)
-            self.lines.append(control)
+            control = SingleControl(len(self.controls), x, line)
+            self.controls.append(control)
 
     def write(self, file):
         with open(file, "wb") as f:
             f.write(self._bytes)
 
     def __str__(self):
-       return '\n'.join([str(x) for x in self.lines])
+       return '\n'.join([str(x) for x in self.controls])
 
     def print_all(self):
-        for control in self.lines:
+        for control in self.controls:
             print(control._position, control._position + len(control), control['name'], control)
 
     def print_distinct(self, fieldName):
-        print(set([c[fieldName] for c in self.lines]), sys.argv[1])
+        print(set([c[fieldName] for c in self.controls]), sys.argv[1])
 
     def print_field(self, fieldName):
-        for line in self.lines:
-            print(line['name'], ord(line['CC|Note']), ord(line[fieldName]))
+        for line in self.controls:
+            print('%s %s CC%s %s' % (line.label, line['name'], ord(line['CC|Note']), ord(line[fieldName])))
 
     @property
     def _bytes(self):
         _bytes = bytearray(self.header)
-        for control in self.lines:
+        for control in self.controls:
             _bytes.extend(control._bytes)
         _bytes.extend(self.footer)
         return _bytes
 
 template = Template(sys.argv[1])
 # template.print_all()
-# template.print_field('unknown3')
+template.print_field('unknown3')
 # template.print_distinct('unknown3')
 # print(template._bytes)
 # template.write(sys.argv[2])
