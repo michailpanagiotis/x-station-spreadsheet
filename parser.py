@@ -79,6 +79,8 @@ class SingleControl(dict):
         if len(cmd) != 1 + init_length + zeros_length + name_length + rest_length:
             raise Exception('cmd bad length %s %s' % (len(cmd), cmd))
 
+        self._length = len(cmd)
+
         init_offset = 1
         zeros_offset = init_offset + init_length
         name_offset = zeros_offset + zeros_length
@@ -142,16 +144,19 @@ class SingleControl(dict):
     def __str__(self):
         return '<%s> %s' % (self._name, ' '.join([str(x) for x in self._fields]))
 
+    def __len__(self):
+        return self._length
+
 def parseSingle(cmd):
     control = SingleControl(cmd)
-    print(control)
-    return (control._name, control._fields)
+    if len(control) != 52:
+        raise Exception('Wrong length %s' % len(control))
+    return control
 
 def parseMulti(data):
     step = 52
     cmds = [data[x:x+step] for x in range(0, len(data), step)]
-    fields = [parseSingle(cmd) for cmd in cmds if len(cmd) > 0]
-    return {name:fields for (name, fields) in fields}
+    return [parseSingle(cmd) for cmd in cmds if len(cmd) > 0]
 
 
 with open(sys.argv[1], "rb") as f:
@@ -162,4 +167,9 @@ with open(sys.argv[1], "rb") as f:
 matches = re.findall(b'\x0f[^\x0f]+', all_bytes[1:-1])
 # print(len(matches))
 for match in matches:
-    dd = parseMulti(match)
+    controls = parseMulti(match)
+    for idx, control in enumerate(controls):
+        if idx == 0:
+            print(len(control), control)
+        else:
+            print('\t', len(control), control)
