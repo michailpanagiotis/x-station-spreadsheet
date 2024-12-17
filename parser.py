@@ -17,6 +17,7 @@ class NumericValue(dict):
     def __init__(self, name, byte, hidden=False):
         self._name = name
         self._byte = byte
+        self._bytes = [byte]
         self._hidden = hidden
         dict.__init__(self, name=name, byte=byte)
 
@@ -25,7 +26,7 @@ class NumericValue(dict):
             if self._byte:
                 return '<N>%s' % (self._byte)
             else:
-                return '?'
+                return '?<%s>' % (self._byte)
         if self._hidden:
             return '_'
         return '<%s>%s' % (self._name, self._byte)
@@ -33,11 +34,17 @@ class NumericValue(dict):
     def __len__(self):
         return 1
 
+class SysexValue(NumericValue):
+    def __repr__(self):
+        return 'sx'
+
 class BitMap(dict):
     def __init__(self, ms_name, ls_name, byte):
         self._ms_name = ms_name
         self._ls_name = ls_name
         self._byte = byte
+        self._bytes = [byte]
+        self._name = '%s|%s' % (ms_name, ls_name)
         dict.__init__(self, ms_name=ms_name, ls_name=ls_name, byte=byte)
 
     def __repr__(self):
@@ -59,7 +66,7 @@ class StringValue(dict):
             return ''
         if self._name == 'unknown':
             return '<S>%s' % (ascii(self._bytes))
-        return '<S: %s>%s' % (self._name, ascii(self._bytes))
+        return '<%s>%s' % (self._name, ascii(self._bytes))
 
     def __len__(self):
         return len(self._bytes)
@@ -74,58 +81,61 @@ class SingleControl(dict):
             raise Exception('bad length')
 
         self._length = len(cmd)
-        print(' ')
-        print(cmd)
+        # print(' ')
+        # print(cmd)
 
         cmd = [x for x in cmd]
 
         fields = []
-
-        fields.append(NumericValue('ch', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('Step', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
-
         name = bytes(cmd[:name_length]).decode('ascii')
         fields.append(StringValue('name', name))
 
         cmd = cmd[name_length:]
 
         fields.append(NumericValue('Ct', cmd.pop(0)))
-        fields.append(NumericValue('Low', cmd.pop(0)))
+        fields.append(NumericValue('Low|Template|Velocity|MMC Command', cmd.pop(0)))
         fields.append(NumericValue('Hi', cmd.pop(0)))
         fields.append(BitMap('Ports', 'Button type', cmd.pop(0)))
         fields.append(NumericValue('PotCtrl', cmd.pop(0)))
-        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('DisplayType', cmd.pop(0)))
         fields.append(NumericValue('NRPN MSBank Num', cmd.pop(0)))
-        fields.append(NumericValue('CC', cmd.pop(0)))
+        fields.append(NumericValue('CC|Note', cmd.pop(0)))
+
+        fields.append(NumericValue('Channel|Device id', cmd.pop(0)))
+        fields.append(NumericValue('Template|Velocity|MMC Command', cmd.pop(0)))
+        fields.append(NumericValue('unknown1', cmd.pop(0)))
+        fields.append(NumericValue('unknown2', cmd.pop(0)))
+        fields.append(NumericValue('unknown3', cmd.pop(0)))
+
+        fields.append(SysexValue('sx1', cmd.pop(0)))
+        fields.append(SysexValue('sx2', cmd.pop(0)))
+        fields.append(SysexValue('sx3', cmd.pop(0)))
+        fields.append(SysexValue('sx4', cmd.pop(0)))
+        fields.append(SysexValue('sx5', cmd.pop(0)))
+        fields.append(SysexValue('sx6', cmd.pop(0)))
+        fields.append(SysexValue('sx7', cmd.pop(0)))
+        fields.append(SysexValue('sx8', cmd.pop(0)))
+        fields.append(SysexValue('sx9', cmd.pop(0)))
+        fields.append(SysexValue('sx10', cmd.pop(0)))
+        fields.append(SysexValue('sx11', cmd.pop(0)))
+        fields.append(SysexValue('sx12', cmd.pop(0)))
+        fields.append(SysexValue('sx13', cmd.pop(0)))
+        fields.append(SysexValue('sx14', cmd.pop(0)))
+        fields.append(SysexValue('sx15', cmd.pop(0)))
+        fields.append(SysexValue('sx16', cmd.pop(0)))
+        fields.append(SysexValue('sx17', cmd.pop(0)))
+        fields.append(SysexValue('sx18', cmd.pop(0)))
+
+        fields.append(NumericValue('Step', cmd.pop(0)))
+        fields.append(NumericValue('unknown4', cmd.pop(0)))
+        fields.append(NumericValue('unknown5', cmd.pop(0)))
+        fields.append(NumericValue('unknown6', cmd.pop(0)))
+        fields.append(NumericValue('unknown7', cmd.pop(0)))
 
         self._name = name
         self._fields = fields
+        for field in fields:
+            self[field._name] = field._bytes
 
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self._fields]))
@@ -152,7 +162,7 @@ with open(sys.argv[1], "rb") as f:
 
 lines = []
 footer = []
-offset = 429
+offset = 405
 header = all_bytes[:offset]
 line_size = 52
 
@@ -161,7 +171,7 @@ for x in range(offset, len(all_bytes), line_size):
         footer = all_bytes[x:]
         break;
 
-    # if x != 6773:
+    # if x != 6801:
     #     continue
 
     line = all_bytes[x : x + line_size]
