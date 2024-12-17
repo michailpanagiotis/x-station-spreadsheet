@@ -47,6 +47,8 @@ class ZeroPadding():
     def __repr__(self):
         return '<zeros>%s' % self._num_bytes
 
+    def __len__(self):
+        return self._num_bytes
 
 class BitMap(dict):
     def __init__(self, ms_name, ls_name, byte):
@@ -82,7 +84,7 @@ class StringValue(dict):
         return len(self._bytes)
 
 class SingleControl(dict):
-    def __init__(self, cmd, name_length=16):
+    def __init__(self, position, cmd, name_length=16):
         if len(cmd) != 52:
             raise Exception('bad length')
 
@@ -136,6 +138,7 @@ class SingleControl(dict):
         if len(cmd) != 0:
             raise Exception('non parsed fields')
 
+        self._position = position
         self._name = name
         self._fields = fields
         for field in fields:
@@ -144,13 +147,23 @@ class SingleControl(dict):
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self._fields]))
 
+    @property
+    def _bytes(self):
+        _bytes = bytearray()
+        for field in self._fields:
+            _bytes.extend(field._bytes)
+        return _bytes
+
+    def __len__(self):
+        return len(self._bytes)
+
 class Template():
     def __init__(self, file):
         offset = 405
         line_size = 52
         self.lines = []
         self.footer = []
-        with open(sys.argv[1], "rb") as f:
+        with open(file, "rb") as f:
             all_bytes = f.read()
 
         self.header = all_bytes[:offset]
@@ -159,17 +172,39 @@ class Template():
                 self.footer = all_bytes[x:]
                 break;
 
-            # if x != 6801:
-            #     continue
-
             line = all_bytes[x : x + line_size]
-            control = SingleControl(line)
-            print(x, x + 52, control['name'], control)
-            # print(line)
+            control = SingleControl(x, line)
             self.lines.append(control)
+
+    def write(self, file):
+        with open(file, "wb") as f:
+            f.write(self._bytes)
 
     def __str__(self):
        return '\n'.join([str(x) for x in self.lines])
 
+    def print_all(self):
+        for control in self.lines:
+            print(control._position, control._position + len(control), control['name'], control)
+
+    def print_distinct(self, fieldName):
+        print(set([c[fieldName] for c in self.lines]), sys.argv[1])
+
+    def print_field(self, fieldName):
+        for line in self.lines:
+            print(line['name'], ord(line['CC|Note']), ord(line[fieldName]))
+
+    @property
+    def _bytes(self):
+        _bytes = bytearray(self.header)
+        for control in self.lines:
+            _bytes.extend(control._bytes)
+        _bytes.extend(self.footer)
+        return _bytes
+
 template = Template(sys.argv[1])
-print(set([c['unknown3'] for c in template.lines]), sys.argv[1])
+# template.print_all()
+# template.print_field('unknown3')
+# template.print_distinct('unknown3')
+# print(template._bytes)
+# template.write(sys.argv[2])
