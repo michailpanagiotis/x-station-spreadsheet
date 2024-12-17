@@ -69,80 +69,66 @@ class ChannelValue(NumericValue):
         super().__init__(name='ch', byte=byte)
 
 class SingleControl(dict):
-    def __init__(self, cmd, init_length=3, zeros_length=24, name_length=16, rest_length=8):
-        if rest_length == 8 and len(cmd) == 51:
-            return self.__init__(cmd, rest_length=7)
-
-        if name_length == 16 and len(cmd) == 1 + init_length + zeros_length + 2:
-            return self.__init__(cmd, name_length=2, rest_length=0)
-
-        if len(cmd) != 1 + init_length + zeros_length + name_length + rest_length:
-            raise Exception('cmd bad length %s %s' % (len(cmd), cmd))
+    def __init__(self, cmd, name_length=16):
+        if len(cmd) != 52:
+            raise Exception('bad length')
 
         self._length = len(cmd)
+        print(' ')
+        print(cmd)
 
-        init_offset = 1
-        zeros_offset = init_offset + init_length
-        name_offset = zeros_offset + zeros_length
-        rest_offset = name_offset + name_length
+        cmd = [x for x in cmd]
 
-        fields = [NumericValue('ch', cmd[0])]
-        fields.extend([NumericValue('unknown', x) for x in cmd[init_offset:zeros_offset]])
+        fields = []
 
-        zeros = cmd[zeros_offset:name_offset]
-        # for z in zeros:
-        #     if z != 0:
-        #         print(cmd)
-        #         print(len(cmd))
-        #         raise Exception('bad zeros')
+        fields.append(NumericValue('ch', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('Step', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
 
-        # fields.append(NumericValue('zeros', len(zeros)))
+        name = bytes(cmd[:name_length]).decode('ascii')
+        fields.append(StringValue('name', name))
 
-        fields.append(NumericValue('unknown', cmd[zeros_offset]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 1]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 2]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 3]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 4]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 5]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 6]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 7]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 8]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 9]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 10]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 11]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 12]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 13]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 14]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 15]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 16]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 17]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 18]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 19]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 20]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 21]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 22]))
-        fields.append(NumericValue('unknown', cmd[zeros_offset + 23]))
+        cmd = cmd[name_length:]
 
+        fields.append(NumericValue('Ct', cmd.pop(0)))
+        fields.append(NumericValue('Low', cmd.pop(0)))
+        fields.append(NumericValue('Hi', cmd.pop(0)))
+        fields.append(BitMap('Ports', 'Button type', cmd.pop(0)))
+        fields.append(NumericValue('PotCtrl', cmd.pop(0)))
+        fields.append(NumericValue('unknown', cmd.pop(0)))
+        fields.append(NumericValue('NRPN MSBank Num', cmd.pop(0)))
+        fields.append(NumericValue('CC', cmd.pop(0)))
 
-        name = cmd[name_offset:rest_offset].decode('ascii')
-        fields.append(StringValue('name', name, hidden=True))
-
-        if rest_length >= 7:
-            fields.append(NumericValue('Ct', cmd[rest_offset]))
-            fields.append(NumericValue('Low', cmd[rest_offset+1]))
-            fields.append(NumericValue('Hi', cmd[rest_offset+2]))
-            fields.append(BitMap('Ports', 'Button type', cmd[rest_offset+3]))
-            fields.append(NumericValue('PotCtrl', cmd[rest_offset+4], hidden=True))
-            fields.append(NumericValue('unknown', cmd[rest_offset+5]))
-            fields.append(NumericValue('NRPN MSBank Num', cmd[rest_offset+6], hidden=True))
-
-        if rest_length == 8:
-            fields.append(NumericValue('CC', cmd[-1]))
         self._name = name
         self._fields = fields
 
     def __str__(self):
-        return '<%s> %s' % (self._name, ' '.join([str(x) for x in self._fields]))
+        return '%s' % (' '.join([str(x) for x in self._fields]))
 
     def __len__(self):
         return self._length
@@ -150,7 +136,8 @@ class SingleControl(dict):
 def parseSingle(cmd):
     control = SingleControl(cmd)
     if len(control) != 52:
-        raise Exception('Wrong length %s' % len(control))
+        print(' --------------XXXXX', control._name)
+        # raise Exception('Wrong length %s' % len(control))
     return control
 
 def parseMulti(data):
@@ -163,13 +150,54 @@ with open(sys.argv[1], "rb") as f:
     all_bytes = f.read()
 
 
-# remove first and last byte (SysEx bytes)
-matches = re.findall(b'\x0f[^\x0f]+', all_bytes[1:-1])
-# print(len(matches))
-for match in matches:
-    controls = parseMulti(match)
-    for idx, control in enumerate(controls):
-        if idx == 0:
-            print(len(control), control)
-        else:
-            print('\t', len(control), control)
+lines = []
+footer = []
+offset = 429
+header = all_bytes[:offset]
+line_size = 52
+
+for x in range(offset, len(all_bytes), line_size):
+    if x + 52 > len(all_bytes):
+        footer = all_bytes[x:]
+        break;
+
+    # if x != 6773:
+    #     continue
+
+    line = all_bytes[x : x + line_size]
+    control = parseSingle(line)
+    print(x, x + 52, control)
+    # print(line)
+    lines.append([(x, x + line_size)])
+
+print('FOOTER', footer)
+
+# print(lines)
+# body_length = len(all_bytes) - 2
+# offset = body_length % 52
+#
+# first = all_bytes.index(b'\x0f')
+# last = len(all_bytes) - all_bytes[::-1].index(b'\x0f') - 1
+#
+# old_idx = 0
+# for idx, byte in enumerate(all_bytes):
+#     if byte == 15:
+#         print(idx, idx-old_idx, (idx-old_idx) % 52)
+#         old_idx = idx
+#
+# print('LIMITS', first, last)
+# print(all_bytes[old_idx:])
+
+# matches = re.findall(b'\x0f[^\x0f]+', all_bytes[1:-1])
+# for match in matches:
+#     controls = parseMulti(match)
+#     for idx, control in enumerate(controls):
+#         if idx == 0:
+#             print(len(control), control)
+#         else:
+#             print('\t', len(control), control)
+
+# lines = all_bytes[-107:-3]
+# controls = parseMulti(lines)
+# for idx, control in enumerate(controls):
+#     print(len(control), control)
