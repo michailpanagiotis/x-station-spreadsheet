@@ -176,7 +176,7 @@ for x in range(offset, len(all_bytes), line_size):
 
     line = all_bytes[x : x + line_size]
     control = parseSingle(line)
-    print(x, x + 52, control)
+    print(x, x + 52, control['name'], control['unknown7'])
     # print(line)
     lines.append([(x, x + line_size)])
 
