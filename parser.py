@@ -38,12 +38,22 @@ class SysexValue(NumericValue):
     def __repr__(self):
         return 'sx'
 
+class ZeroPadding():
+    def __init__(self, name, num_bytes):
+        self._name = name
+        self._num_bytes = num_bytes
+        self._bytes = b''.join([b'\x00'] * num_bytes)
+
+    def __repr__(self):
+        return '<zeros>%s' % self._num_bytes
+
+
 class BitMap(dict):
     def __init__(self, ms_name, ls_name, byte):
         self._ms_name = ms_name
         self._ls_name = ls_name
         self._byte = byte
-        self._bytes = [byte]
+        self._bytes = bytes([byte])
         self._name = '%s|%s' % (ms_name, ls_name)
         dict.__init__(self, ms_name=ms_name, ls_name=ls_name, byte=byte)
 
@@ -57,7 +67,7 @@ class BitMap(dict):
 class StringValue(dict):
     def __init__(self, name, value, hidden=False):
         self._name = name
-        self._bytes = value
+        self._bytes = bytes(value)
         self._hidden = hidden
         dict.__init__(self, name=name, bytes=value)
 
@@ -71,23 +81,15 @@ class StringValue(dict):
     def __len__(self):
         return len(self._bytes)
 
-class ChannelValue(NumericValue):
-    def __init__(self, byte):
-        super().__init__(name='ch', byte=byte)
-
 class SingleControl(dict):
     def __init__(self, cmd, name_length=16):
         if len(cmd) != 52:
             raise Exception('bad length')
 
-        self._length = len(cmd)
-        # print(' ')
-        # print(cmd)
-
         cmd = [x for x in cmd]
 
         fields = []
-        name = bytes(cmd[:name_length]).decode('ascii')
+        name = bytes(cmd[:name_length])
         fields.append(StringValue('name', name))
 
         cmd = cmd[name_length:]
@@ -127,87 +129,47 @@ class SingleControl(dict):
         fields.append(SysexValue('sx18', cmd.pop(0)))
 
         fields.append(NumericValue('Step', cmd.pop(0)))
-        fields.append(NumericValue('unknown4', cmd.pop(0)))
-        fields.append(NumericValue('unknown5', cmd.pop(0)))
-        fields.append(NumericValue('unknown6', cmd.pop(0)))
-        fields.append(NumericValue('unknown7', cmd.pop(0)))
+
+        fields.append(ZeroPadding('zeros', 4))
+        cmd = cmd[4:]
+
+        if len(cmd) != 0:
+            raise Exception('non parsed fields')
 
         self._name = name
         self._fields = fields
         for field in fields:
-            self[field._name] = field._bytes
+            self[field._name] = bytes(field._bytes)
 
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self._fields]))
 
-    def __len__(self):
-        return self._length
+class Template():
+    def __init__(self, file):
+        offset = 405
+        line_size = 52
+        self.lines = []
+        self.footer = []
+        with open(sys.argv[1], "rb") as f:
+            all_bytes = f.read()
 
-def parseSingle(cmd):
-    control = SingleControl(cmd)
-    if len(control) != 52:
-        print(' --------------XXXXX', control._name)
-        # raise Exception('Wrong length %s' % len(control))
-    return control
+        self.header = all_bytes[:offset]
+        for x in range(offset, len(all_bytes), line_size):
+            if x + 52 > len(all_bytes):
+                self.footer = all_bytes[x:]
+                break;
 
-def parseMulti(data):
-    step = 52
-    cmds = [data[x:x+step] for x in range(0, len(data), step)]
-    return [parseSingle(cmd) for cmd in cmds if len(cmd) > 0]
+            # if x != 6801:
+            #     continue
 
+            line = all_bytes[x : x + line_size]
+            control = SingleControl(line)
+            print(x, x + 52, control['name'], control)
+            # print(line)
+            self.lines.append(control)
 
-with open(sys.argv[1], "rb") as f:
-    all_bytes = f.read()
+    def __str__(self):
+       return '\n'.join([str(x) for x in self.lines])
 
-
-lines = []
-footer = []
-offset = 405
-header = all_bytes[:offset]
-line_size = 52
-
-for x in range(offset, len(all_bytes), line_size):
-    if x + 52 > len(all_bytes):
-        footer = all_bytes[x:]
-        break;
-
-    # if x != 6801:
-    #     continue
-
-    line = all_bytes[x : x + line_size]
-    control = parseSingle(line)
-    print(x, x + 52, control['name'], control['unknown7'])
-    # print(line)
-    lines.append([(x, x + line_size)])
-
-print('FOOTER', footer)
-
-# print(lines)
-# body_length = len(all_bytes) - 2
-# offset = body_length % 52
-#
-# first = all_bytes.index(b'\x0f')
-# last = len(all_bytes) - all_bytes[::-1].index(b'\x0f') - 1
-#
-# old_idx = 0
-# for idx, byte in enumerate(all_bytes):
-#     if byte == 15:
-#         print(idx, idx-old_idx, (idx-old_idx) % 52)
-#         old_idx = idx
-#
-# print('LIMITS', first, last)
-# print(all_bytes[old_idx:])
-
-# matches = re.findall(b'\x0f[^\x0f]+', all_bytes[1:-1])
-# for match in matches:
-#     controls = parseMulti(match)
-#     for idx, control in enumerate(controls):
-#         if idx == 0:
-#             print(len(control), control)
-#         else:
-#             print('\t', len(control), control)
-
-# lines = all_bytes[-107:-3]
-# controls = parseMulti(lines)
-# for idx, control in enumerate(controls):
-#     print(len(control), control)
+template = Template(sys.argv[1])
+print(set([c['unknown3'] for c in template.lines]), sys.argv[1])
