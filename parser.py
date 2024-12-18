@@ -159,10 +159,14 @@ indices = [
 class RawBytes():
     @classmethod
     def pop_from(cls, other_bytes, name, size, *args, **kwargs):
+        if not isinstance(other_bytes, bytearray):
+            raise Exception('expecting a bytearray')
+
         bytes = bytearray(other_bytes[:size])
 
-        for _ in range(size):
-            other_bytes.pop(0)
+        if isinstance(other_bytes, bytearray):
+            for _ in range(size):
+                other_bytes.pop(0)
 
         return cls(name, bytes, *args, **kwargs)
 
@@ -199,16 +203,16 @@ class NumericValue(SingleByte):
 class SelectValue(NumericValue):
     @classmethod
     def pop_from(cls, other_bytes, name, valid_values, *args, **kwargs):
-        return super(SelectValue, cls).pop_from(other_bytes, name, valid_values, *args, **kwargs)
+        return super(SelectValue, cls).pop_from(other_bytes, name, *args, **kwargs, valid_values=valid_values)
 
 class StringValue(RawBytes):
     def __str__(self):
         return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
 class ZeroPadding(RawBytes):
-    def __init__(self, *args, **kwargs):
-        kwargs['valid_values'] = (0,)
-        super().__init__(*args, **kwargs)
+    @classmethod
+    def pop_from(cls, *args, **kwargs):
+        return super(ZeroPadding, cls).pop_from(*args, **kwargs, valid_values=(0,))
 
     def __str__(self):
         return str(len(self))
