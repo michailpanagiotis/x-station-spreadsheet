@@ -175,6 +175,9 @@ class NumericValue(Field):
     def __repr__(self):
         return '<%s:%s>' % (self.name, self.bytes[0])
 
+    def csv(self):
+        return str(self.bytes[0])
+
 class SelectValue(Field):
     @classmethod
     def pop_from(cls, other_bytes, name, options, *args, **kwargs):
@@ -205,6 +208,9 @@ class ZeroPadding(Field):
     def __repr__(self):
         return ''
 
+    def csv(self):
+        return str(len(self))
+
 class BitMap(Field):
     @classmethod
     def pop_from(cls, other_bytes, ms_name, ls_name, *args, **kwargs):
@@ -218,6 +224,9 @@ class BitMap(Field):
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
         return '<%s:%s|%s:%s>' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
+
+    def csv(self):
+        return hex(self.bytes[0])
 
 class SysexValue(Field):
     @classmethod
@@ -235,6 +244,9 @@ class SysexValue(Field):
     def __repr__(self):
         return '<%s:%s>' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
+    def csv(self):
+        return ''.join([hex(x) for x in self.bytes])
+
 class StringValue(Field):
     @classmethod
     def pop_from(cls, other_bytes, name, size=16, *args, **kwargs):
@@ -250,6 +262,9 @@ class StringValue(Field):
 
     def __repr__(self):
         return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
+
+    def csv(self):
+        return ''.join([chr(x) for x in self.bytes]).strip()
 
 class SingleControl(dict):
     def __init__(self, idx, byte_index, cmd, name_length=16, sysex_length=18):
@@ -285,17 +300,20 @@ class SingleControl(dict):
         self.byte_index = byte_index
         self.full_name = ''.join([chr(x) for x in name])
         self.name = self.full_name.strip()
-        self._fields = fields
+        self.fields = fields
         for field in fields:
             self[field.name] = field.bytes
 
     def __str__(self):
-        return '%s' % (' '.join([str(x) for x in self._fields if x.name != 'Name']))
+        return '%s' % (' '.join([str(x) for x in self.fields if x.name != 'Name']))
+
+    def csv(self):
+        return '%s,%s' % (self.legend.strip(), ','.join([x.csv() for x in self.fields]))
 
     @property
     def bytes(self):
         bytes = bytearray()
-        for field in self._fields:
+        for field in self.fields:
             bytes.extend(field.bytes)
         return bytes
 
@@ -310,7 +328,7 @@ class SingleControl(dict):
         return legend.rjust(30, ' ')
 
     def __getitem__(self, key):
-        field = next((x for x in self._fields if x.name == key), None)
+        field = next((x for x in self.fields if x.name == key), None)
         if field is None:
             raise KeyError
         return field
@@ -461,8 +479,8 @@ class Template():
         fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 170))
 
-        for field in [x for x in fields if type(x) != ZeroPadding]:
-            print(field.name, field, ' '.join([str(x) for x in field.bytes]))
+        # for field in [x for x in fields if type(x) != ZeroPadding]:
+        #     print(field.name, field, ' '.join([str(x) for x in field.bytes]))
 
         self.header_fields = fields
 
@@ -520,6 +538,12 @@ class Template():
         for line in self.controls:
             print('%s %s %s %s' % (line.legend, line['name'], line['CC|Note'], line[fieldName]))
 
+    def print_controls(self):
+        headers = 'Legend,%s' % (','.join([field.name for field in self.controls[0].fields]))
+        print(headers)
+        for control in self.controls:
+            print(control.csv())
+
     @property
     def bytes(self):
         bytes = bytearray(Template.MESSAGE_START)
@@ -536,3 +560,4 @@ template = Template(sys.argv[1])
 # template.print_distinct('unknown3')
 # print(template.bytes)
 # template.write(sys.argv[2])
+template.print_controls()
