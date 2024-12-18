@@ -160,12 +160,11 @@ class RawBytes():
     @classmethod
     def pop_from(cls, other_bytes, name, size, *args, **kwargs):
         bytes = bytearray(other_bytes[:size])
-        instance = cls(name, bytes, *args, **kwargs)
 
         for _ in range(size):
             other_bytes.pop(0)
 
-        return instance
+        return cls(name, bytes, *args, **kwargs)
 
     def __init__(self, name, bytes, valid_values=(), hidden=False, aliases=()):
         self.name = name
@@ -217,12 +216,12 @@ class ZeroPadding(RawBytes):
 class BitMap(SingleByte):
     @classmethod
     def pop_from(cls, other_bytes, ms_name, ls_name, *args, **kwargs):
-        return cls(ms_name, ls_name, other_bytes.pop(0), *args, **kwargs)
+        return super(BitMap, cls).pop_from(other_bytes, '%s|%s' % (ms_name, ls_name), ms_name, ls_name, *args, **kwargs)
 
-    def __init__(self, ms_name, ls_name, byte, *args, **kwargs):
+    def __init__(self, name, bytes, ms_name, ls_name, *args, **kwargs):
+        super().__init__(name, bytes, *args, **kwargs)
         self._ms_name = ms_name
         self._ls_name = ls_name
-        super().__init__('%s|%s' % (ms_name, ls_name), bytes([byte]), *args, **kwargs)
 
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
