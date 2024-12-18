@@ -175,6 +175,9 @@ class NumericValue(Field):
     def __repr__(self):
         return '<%s:%s>' % (self.name, self.bytes[0])
 
+    def __str__(self):
+        return str(self.bytes[0])
+
     def csv(self):
         return str(self.bytes[0])
 
@@ -187,6 +190,9 @@ class SelectValue(Field):
         if byte not in options:
             raise Exception('unsupported option %s' % byte)
         super().__init__(name, bytes([byte]), *args, **kwargs)
+
+    def __str__(self):
+        return str(self.bytes[0])
 
     def __repr__(self):
         return '<%s:%s>' % (self.name, self.bytes[0])
@@ -208,6 +214,9 @@ class ZeroPadding(Field):
     def __repr__(self):
         return ''
 
+    def __str__(self):
+        return str(len(self))
+
     def csv(self):
         return str(len(self))
 
@@ -224,6 +233,9 @@ class BitMap(Field):
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
         return '<%s:%s|%s:%s>' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
+
+    def __str__(self):
+        return hex(self.bytes[0])
 
     def csv(self):
         return hex(self.bytes[0])
@@ -244,6 +256,9 @@ class SysexValue(Field):
     def __repr__(self):
         return '<%s:%s>' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
+    def __str__(self):
+        return ''.join([hex(x) for x in self.bytes])
+
     def csv(self):
         return ''.join([hex(x) for x in self.bytes])
 
@@ -262,6 +277,9 @@ class StringValue(Field):
 
     def __repr__(self):
         return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
+
+    def __str__(self):
+        return ''.join([chr(x) for x in self.bytes]).strip()
 
     def csv(self):
         return ''.join([chr(x) for x in self.bytes]).strip()
@@ -306,6 +324,12 @@ class SingleControl(dict):
 
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self.fields if x.name != 'Name']))
+
+    def dict(self):
+        j = { "legend": self.legend.strip() }
+        for f in self.fields:
+            j[f.name] = str(f)
+        return j
 
     def csv(self):
         return '%s,%s' % (self.legend.strip(), ','.join([x.csv() for x in self.fields]))
