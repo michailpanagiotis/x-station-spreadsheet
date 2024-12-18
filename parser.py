@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+import string
 import sys
+from openpyxl import Workbook, load_workbook
 
 indices = [
     { 'section': 'OSCS - MIXER', 'legend': 'PORTAMENTO' },
@@ -155,7 +157,7 @@ indices = [
 ]
 
 class Field():
-    def __init__(self, name, bytes, hidden=False, aliases=[]):
+    def __init__(self, name, bytes, hidden=False, aliases=()):
         self.name = name
         self.bytes = bytes
         self.aliases = aliases
@@ -186,7 +188,7 @@ class SelectValue(Field):
     def pop_from(cls, other_bytes, name, options, *args, **kwargs):
         return cls(name, other_bytes.pop(0), options, *args, **kwargs)
 
-    def __init__(self, name, byte, options=[], *args, **kwargs):
+    def __init__(self, name, byte, options=(), *args, **kwargs):
         if byte not in options:
             raise Exception('unsupported option %s' % byte)
         super().__init__(name, bytes([byte]), *args, **kwargs)
@@ -201,7 +203,7 @@ class ZeroPadding(Field):
     @classmethod
     def pop_from(cls, other_bytes, name, num_zeros, *args, **kwargs):
         bytes = bytearray()
-        for i in range(num_zeros):
+        for _ in range(num_zeros):
             bytes.append(other_bytes.pop(0))
         return cls(name, bytes, *args, **kwargs)
 
@@ -244,7 +246,7 @@ class SysexValue(Field):
     @classmethod
     def pop_from(cls, other_bytes, name,  *args, **kwargs):
         bytes = bytearray()
-        for i in range(18):
+        for _ in range(18):
             bytes.append(other_bytes.pop(0))
         return cls(name, bytes, *args, **kwargs)
 
@@ -266,7 +268,7 @@ class StringValue(Field):
     @classmethod
     def pop_from(cls, other_bytes, name, size=16, *args, **kwargs):
         bytes = bytearray()
-        for i in range(size):
+        for _ in range(size):
             bytes.append(other_bytes.pop(0))
         return cls(name, bytes, size, *args, **kwargs)
 
@@ -279,20 +281,26 @@ class StringValue(Field):
         return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
 
     def __str__(self):
-        return ''.join([chr(x) for x in self.bytes]).strip()
+        return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
     def csv(self):
         return ''.join([chr(x) for x in self.bytes]).strip()
 
 class SingleControl(dict):
-    def __init__(self, idx, byte_index, cmd, name_length=16, sysex_length=18):
-        if len(cmd) != 52:
-            raise Exception('bad length')
+    @classmethod
+    def from_spreadsheet(self, row):
+        values = [c.value for c in row]
+        print('LEN', len(values))
 
-        cmd = [x for x in cmd]
+    @classmethod
+    def from_bytes(cls, idx, cmd, byte_index=None):
+        if isinstance(cmd, bytes):
+            if len(cmd) != 52:
+                raise Exception('bad length')
+
+            cmd = bytearray(cmd)
 
         fields = []
-        name = bytes(cmd[:name_length])
         fields.append(StringValue.pop_from(cmd, 'Name', aliases=['Control name']))
         fields.append(NumericValue.pop_from(cmd, 'Type', aliases=['Control Type']))
         fields.append(NumericValue.pop_from(cmd, 'Low', aliases=['Template', 'Velocity', 'MMC Command']))
@@ -314,6 +322,10 @@ class SingleControl(dict):
         if len(cmd) != 0:
             raise Exception('non parsed fields')
 
+        return cls(idx, fields, byte_index)
+
+    def __init__(self, idx, fields, byte_index=None):
+        name = next(x.bytes for x in fields if x.name == 'Name')
         self.index = idx
         self.byte_index = byte_index
         self.full_name = ''.join([chr(x) for x in name])
@@ -333,6 +345,11 @@ class SingleControl(dict):
 
     def csv(self):
         return '%s,%s' % (self.legend.strip(), ','.join([x.csv() for x in self.fields]))
+
+    def write_to_sheet(self, ws, row_number):
+        ws.cell(row=row_number, column=1, value=self.legend.strip())
+        for idx, field in enumerate(self.fields):
+            ws.cell(row=row_number, column=idx + 2, value=str(field))
 
     @property
     def bytes(self):
@@ -531,7 +548,7 @@ class Template():
 
         for byte_index in range(0, len(controls), line_size):
             bytes = controls[byte_index : byte_index + line_size]
-            control = SingleControl(len(self.controls), byte_index, bytes)
+            control = SingleControl.from_bytes(len(self.controls), bytes, byte_index)
             self.controls.append(control)
 
         bytes = self.bytes
@@ -568,6 +585,46 @@ class Template():
         for control in self.controls:
             print(control.csv())
 
+    @classmethod
+    def from_spreadsheet(cls, filename):
+        wb = load_workbook(filename=filename)
+        ws = wb['Controls']
+        for row in ws.rows:
+            control = SingleControl.from_spreadsheet(row)
+            for cell in row:
+                print(cell.column)
+
+    def to_spreadsheet(self, filename):
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Template configuration"
+
+        for idx, field in enumerate(self.header_fields):
+            ws.cell(row=idx+1, column=1, value=field.name)
+            ws.cell(row=idx+1, column=2, value=str(field))
+
+        wb.create_sheet("Controls")
+        ws = wb['Controls']
+        ws.cell(row=1, column=1, value='Legend')
+        for idx, field in enumerate(self.controls[0].fields):
+            ws.cell(row=1, column=idx + 2, value=field.name)
+        for idx, control in enumerate(self.controls):
+            control.write_to_sheet(ws, idx + 2)
+
+        wb.create_sheet("Control Order")
+        ws = wb["Control Order"]
+
+        ws.cell(row=1, column=1, value='section')
+        ws.cell(row=1, column=2, value='legend')
+        ws.cell(row=1, column=3, value='selector')
+
+        for idx, field in enumerate(indices):
+            ws.cell(row=idx+2, column=1, value=field['section'])
+            ws.cell(row=idx+2, column=2, value=field['legend'])
+            ws.cell(row=idx+2, column=3, value=field['selector'] if 'selector' in field else '')
+
+        wb.save(filename)
+
     @property
     def bytes(self):
         bytes = bytearray(Template.MESSAGE_START)
@@ -585,3 +642,7 @@ template = Template(sys.argv[1])
 # print(template.bytes)
 # template.write(sys.argv[2])
 template.print_controls()
+
+template.to_spreadsheet('test.xlsx')
+
+template2 = Template.from_spreadsheet('test.xlsx')
