@@ -18,93 +18,93 @@ indices = [{
 }, {
     'section': 'OSCS - MIXER', 'label': 'UNISON'
 }, {
-    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 1',
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 1',
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 1',
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 1',
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 1',
-}, {
-    'section': '???? OSCS - MIXER', 'label': '????'
-}, {
-    'section': '???? OSCS - MIXER', 'label': '????'
-}, {
-    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 1',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 1',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 1',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 1',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 2',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 2',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 2',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 2',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 2',
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'selector': 'Osc 1',
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
-    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 2',
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 2',
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 2',
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 2',
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'selector': 'Osc 1',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Osc 3',
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Osc 3',
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Osc 3',
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Osc 3',
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Osc 3',
-}, {
-    'section': '???? OSCS - MIXER', 'label': '????'
-}, {
-    'section': '???? OSCS - MIXER', 'label': '????'
-}, {
-    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Osc 3',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Osc 3',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Osc 3',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Osc 3',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'predicate': 'Noise',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'predicate': 'Noise',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'predicate': 'Noise',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'predicate': 'Noise',
-}, {
-    'section': 'OSCS - MIXER', 'label': 'PWM', 'predicate': 'Noise',
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'selector': 'Osc 2',
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
     'section': '???? OSCS - MIXER', 'label': '????'
 }, {
-    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'predicate': 'Noise',
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'predicate': 'Noise',
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'predicate': 'Noise',
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'selector': 'Osc 2',
 }, {
-    'section': 'OSCS - MIXER', 'label': 'SYNC', 'predicate': 'Noise',
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'selector': 'Osc 2',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'selector': 'Osc 3',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'selector': 'Osc 3',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'WAVEFORM', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SEMITONE', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'DETUNE', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LEVEL', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'PWM', 'selector': 'Noise',
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': '???? OSCS - MIXER', 'label': '????'
+}, {
+    'section': 'OSCS - MIXER', 'label': 'OCTAVE', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'ENV DEPTH', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'LFO DEPTH', 'selector': 'Noise',
+}, {
+    'section': 'OSCS - MIXER', 'label': 'SYNC', 'selector': 'Noise',
 }, {
     'section': '???', 'label': '???',
 }, {
@@ -128,65 +128,65 @@ indices = [{
 }, {
     'section': '???', 'label': '???',
 }, {
-    'section': 'FILTERS', 'label': 'FREQUENCY', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'FREQUENCY', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'RESONANCE', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'RESONANCE', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'KEY TRACK', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'KEY TRACK', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'ENV DEPTH', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'ENV DEPTH', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'LFO DEPTH', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'LFO DEPTH', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'OVERDRIVE', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'OVERDRIVE', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'SLOPE', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'SLOPE', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'TYPE', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'TYPE', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'HPF ON', 'predicate': '1',
+    'section': 'FILTERS', 'label': 'HPF ON', 'selector': '1',
 }, {
-    'section': 'FILTERS', 'label': 'FREQUENCY', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'FREQUENCY', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'RESONANCE', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'RESONANCE', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'KEY TRACK', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'KEY TRACK', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'ENV DEPTH', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'ENV DEPTH', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'LFO DEPTH', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'LFO DEPTH', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'OVERDRIVE', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'OVERDRIVE', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'SLOPE', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'SLOPE', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'TYPE', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'TYPE', 'selector': '2',
 }, {
-    'section': 'FILTERS', 'label': 'HPF ON', 'predicate': '2',
+    'section': 'FILTERS', 'label': 'HPF ON', 'selector': '2',
 }, {
-    'section': 'LFOS', 'label': 'SPEED', 'predicate': '1',
+    'section': 'LFOS', 'label': 'SPEED', 'selector': '1',
 }, {
-    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '1',
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'selector': '1',
 }, {
-    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '1',
+    'section': 'LFOS', 'label': 'WAVEFORM', 'selector': '1',
 }, {
-    'section': 'LFOS', 'label': 'DEST', 'predicate': '1',
+    'section': 'LFOS', 'label': 'DEST', 'selector': '1',
 }, {
-    'section': 'LFOS', 'label': 'SPEED', 'predicate': '2',
+    'section': 'LFOS', 'label': 'SPEED', 'selector': '2',
 }, {
-    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '2',
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'selector': '2',
 }, {
-    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '2',
+    'section': 'LFOS', 'label': 'WAVEFORM', 'selector': '2',
 }, {
-    'section': 'LFOS', 'label': 'DEST', 'predicate': '2',
+    'section': 'LFOS', 'label': 'DEST', 'selector': '2',
 }, {
-    'section': 'LFOS', 'label': 'SPEED', 'predicate': '3',
+    'section': 'LFOS', 'label': 'SPEED', 'selector': '3',
 }, {
-    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'predicate': '3',
+    'section': 'LFOS', 'label': 'DELAY/AMOUNT', 'selector': '3',
 }, {
-    'section': 'LFOS', 'label': 'WAVEFORM', 'predicate': '3',
+    'section': 'LFOS', 'label': 'WAVEFORM', 'selector': '3',
 }, {
-    'section': 'LFOS', 'label': 'DEST', 'predicate': '3',
+    'section': 'LFOS', 'label': 'DEST', 'selector': '3',
 }, {
     'section': 'AMP ENV', 'label': 'ATTACK',
 }, {
@@ -204,25 +204,23 @@ indices = [{
 }, {
     'section': 'MOD ENV / ENV 3', 'label': 'RELEASE',
 }, {
-    'section': 'AMP ENV', 'label': 'MONO / POLY', 'predicate': 'Mod'
+    'section': 'AMP ENV', 'label': 'MONO / POLY', 'selector': 'Mod'
 }, {
-    'section': 'AMP ENV', 'label': 'GATE', 'predicate': 'Mod'
+    'section': 'AMP ENV', 'label': 'GATE', 'selector': 'Mod'
 }, {
-    'section': 'AMP ENV', 'label': 'HOLD', 'predicate': 'Mod'
+    'section': 'AMP ENV', 'label': 'HOLD', 'selector': 'Mod'
 }, {
-    'section': 'AMP ENV', 'label': 'ON / OFF', 'predicate': 'Mod'
+    'section': 'AMP ENV', 'label': 'ON / OFF', 'selector': 'Mod'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'predicate': 'Mod'
+    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'selector': 'Mod'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'predicate': 'Mod'
+    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'selector': 'Mod'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'predicate': 'Mod'
+    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'selector': 'Mod'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'predicate': 'Mod'
+    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'selector': 'Mod'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'predicate': 'Mod'
-}, {
-    'section': '???', 'label': '???',
+    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'selector': 'Mod'
 }, {
     'section': '???', 'label': '???',
 }, {
@@ -238,41 +236,43 @@ indices = [{
 }, {
     'section': '???', 'label': '???',
 }, {
-    'section': 'AMP ENV', 'label': 'MONO / POLY', 'predicate': 'Env 3'
+    'section': '???', 'label': '???',
 }, {
-    'section': 'AMP ENV', 'label': 'GATE', 'predicate': 'Env 3'
+    'section': 'AMP ENV', 'label': 'MONO / POLY', 'selector': 'Env 3'
 }, {
-    'section': 'AMP ENV', 'label': 'HOLD', 'predicate': 'Env 3'
+    'section': 'AMP ENV', 'label': 'GATE', 'selector': 'Env 3'
 }, {
-    'section': 'AMP ENV', 'label': 'ON / OFF', 'predicate': 'Env 3'
+    'section': 'AMP ENV', 'label': 'HOLD', 'selector': 'Env 3'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'predicate': 'Env 3'
+    'section': 'AMP ENV', 'label': 'ON / OFF', 'selector': 'Env 3'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'predicate': 'Env 3'
+    'section': 'MOD ENV / ENV 3', 'label': 'DEST', 'selector': 'Env 3'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'predicate': 'Env 3'
+    'section': 'MOD ENV / ENV 3', 'label': 'GATE', 'selector': 'Env 3'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'predicate': 'Env 3'
+    'section': 'MOD ENV / ENV 3', 'label': 'F1', 'selector': 'Env 3'
 }, {
-    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'predicate': 'Env 3'
+    'section': 'MOD ENV / ENV 3', 'label': 'F2', 'selector': 'Env 3'
+}, {
+    'section': 'MOD ENV / ENV 3', 'label': 'F3', 'selector': 'Env 3'
 }, {
     'section': 'VELOCITY', 'label': 'VELOCITY'
 }, {
-   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Amp',
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'selector': 'Amp',
 }, {
-   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Amp',
+   'section': 'VELOCITY', 'label': 'REPEAT', 'selector': 'Amp',
 }, {
-   'section': '??? VELOCITY', 'label': '???', 'predicate': 'Amp',
+   'section': '??? VELOCITY', 'label': '???', 'selector': 'Amp',
 }, {
-   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Mod',
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'selector': 'Mod',
 }, {
-   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Mod',
+   'section': 'VELOCITY', 'label': 'REPEAT', 'selector': 'Mod',
 }, {
-   'section': '??? VELOCITY', 'label': '???', 'predicate': 'Mod',
+   'section': '??? VELOCITY', 'label': '???', 'selector': 'Mod',
 }, {
-   'section': 'VELOCITY', 'label': 'TRIGGER', 'predicate': 'Env 3',
+   'section': 'VELOCITY', 'label': 'TRIGGER', 'selector': 'Env 3',
 }, {
-   'section': 'VELOCITY', 'label': 'REPEAT', 'predicate': 'Env 3',
+   'section': 'VELOCITY', 'label': 'REPEAT', 'selector': 'Env 3',
 }, {
    'section': 'ARP', 'label': 'TEMPO',
 }, {
@@ -457,8 +457,8 @@ class SingleControl(dict):
     @property
     def label(self):
         if self._idx < len(indices):
-            predicate = '(%s)' % indices[self._idx]['predicate'] if 'predicate' in indices[self._idx] else ''
-            return '%s %s > %s\t' % (indices[self._idx]['section'], predicate, indices[self._idx]['label'])
+            selector = '(%s)' % indices[self._idx]['selector'] if 'selector' in indices[self._idx] else ''
+            return '%s %s > %s\t' % (indices[self._idx]['section'], selector, indices[self._idx]['label'])
         return ''
 
     def __len__(self):
@@ -515,3 +515,5 @@ template.print_field('unknown3')
 # template.print_distinct('unknown3')
 # print(template._bytes)
 # template.write(sys.argv[2])
+
+len(indices)
