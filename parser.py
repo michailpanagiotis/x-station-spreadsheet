@@ -206,6 +206,10 @@ class ZeroPadding(Field):
         return ''
 
 class BitMap(Field):
+    @classmethod
+    def pop_from(cls, other_bytes, ms_name, ls_name, *args, **kwargs):
+        return cls(ms_name, ls_name, other_bytes.pop(0), *args, **kwargs)
+
     def __init__(self, ms_name, ls_name, byte, *args, **kwargs):
         self._ms_name = ms_name
         self._ls_name = ls_name
@@ -216,6 +220,13 @@ class BitMap(Field):
         return '<%s:%s|%s:%s>' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
 
 class SysexValue(Field):
+    @classmethod
+    def pop_from(cls, other_bytes, name,  *args, **kwargs):
+        bytes = bytearray()
+        for i in range(18):
+            bytes.append(other_bytes.pop(0))
+        return cls(name, bytes, *args, **kwargs)
+
     def __init__(self, name, value, *args, **kwargs):
         if len(value) != 18:
             raise Exception('bad length')
@@ -249,33 +260,23 @@ class SingleControl(dict):
 
         fields = []
         name = bytes(cmd[:name_length])
-        fields.append(StringValue('Name', bytes(cmd[:name_length]), aliases=['Control name']))
-        cmd = cmd[name_length:]
-
-        fields.append(NumericValue('Type', cmd.pop(0), aliases=['Control Type']))
-        fields.append(NumericValue('Low', cmd.pop(0), aliases=['Template', 'Velocity', 'MMC Command']))
-        fields.append(NumericValue('High', cmd.pop(0)))
-        fields.append(BitMap('Ports', 'Button', cmd.pop(0)))
-        fields.append(NumericValue('Pot', cmd.pop(0), aliases=['Pot / Slider Control Type']))
-        fields.append(NumericValue('Display', cmd.pop(0), aliases=['Display type']))
-        fields.append(NumericValue('MSBank', cmd.pop(0), aliases=['NRPN MSBank Num']))
-        fields.append(NumericValue('CC', cmd.pop(0), aliases=['Note']))
-        fields.append(NumericValue('Ch', cmd.pop(0), aliases=['Channel', 'Device id']))
-        fields.append(NumericValue('Template', cmd.pop(0), aliases=['Template', 'Velocity', 'MMC Command']))
-        fields.append(NumericValue('N/A 1', cmd.pop(0)))
-        fields.append(NumericValue('N/A 2', cmd.pop(0)))
-        fields.append(NumericValue('N/A 3', cmd.pop(0)))
-
-        sysex = bytes(cmd[:sysex_length])
-        fields.append(SysexValue('Sysex', sysex, hidden=True))
-        cmd = cmd[sysex_length:]
-
-        fields.append(NumericValue('Step', cmd.pop(0)))
-
-        padding = bytes(cmd[:4])
-        fields.append(ZeroPadding('Zeros', padding))
-
-        cmd = cmd[4:]
+        fields.append(StringValue.pop_from(cmd, 'Name', aliases=['Control name']))
+        fields.append(NumericValue.pop_from(cmd, 'Type', aliases=['Control Type']))
+        fields.append(NumericValue.pop_from(cmd, 'Low', aliases=['Template', 'Velocity', 'MMC Command']))
+        fields.append(NumericValue.pop_from(cmd, 'High'))
+        fields.append(BitMap.pop_from(cmd, 'Ports', 'Button'))
+        fields.append(NumericValue.pop_from(cmd, 'Pot', aliases=['Pot / Slider Control Type']))
+        fields.append(NumericValue.pop_from(cmd, 'Display', aliases=['Display type']))
+        fields.append(NumericValue.pop_from(cmd, 'MSBank', aliases=['NRPN MSBank Num']))
+        fields.append(NumericValue.pop_from(cmd, 'CC', aliases=['Note']))
+        fields.append(NumericValue.pop_from(cmd, 'Ch', aliases=['Channel', 'Device id']))
+        fields.append(NumericValue.pop_from(cmd, 'Template', aliases=['Template', 'Velocity', 'MMC Command']))
+        fields.append(NumericValue.pop_from(cmd, 'N/A 1'))
+        fields.append(NumericValue.pop_from(cmd, 'N/A 2'))
+        fields.append(NumericValue.pop_from(cmd, 'N/A 3'))
+        fields.append(SysexValue.pop_from(cmd, 'Sysex', hidden=True))
+        fields.append(NumericValue.pop_from(cmd, 'Step'))
+        fields.append(ZeroPadding.pop_from(cmd, 'Zeros', 4))
 
         if len(cmd) != 0:
             raise Exception('non parsed fields')
@@ -332,14 +333,14 @@ class Template():
         fields.append(NumericValue.pop_from(self.full_header, 'N/A 3'))
         fields.append(StringValue.pop_from(self.full_header, 'Name', 30))
         fields.append(SelectValue.pop_from(self.full_header, 'Channel', [0, 16]))
-        fields.append(SelectValue.pop_from(self.full_header, 'Midi port', [0, 16, 48, 112]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Midi port | Keyb MIDI Chan', [0, 16, 48, 53, 54, 112]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
-        fields.append(SelectValue.pop_from(self.full_header, 'Select 1', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Velocity curve', [0, 1, 2, 3]))
         fields.append(SelectValue.pop_from(self.full_header, 'Select 2', [4, 5]))
-        fields.append(SelectValue.pop_from(self.full_header, 'Select 3', [0, 2]))
-        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
-        fields.append(SelectValue.pop_from(self.full_header, 'Select 4', [0, 2]))
-        fields.append(SelectValue.pop_from(self.full_header, 'Select 5', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Aftertouch | Auto Snapshot | Not Synth', [0, 2, 3, 4, 5, 6, 7]))
+        fields.append(NumericValue.pop_from(self.full_header, 'Override MIDI Ch'))
+        fields.append(SelectValue.pop_from(self.full_header, 'Touchpad X Type', [0, 1, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Touchpad Y Type', [0, 1, 2]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
         fields.append(SelectValue.pop_from(self.full_header, 'Select 6', [48, 64, 79]))
         fields.append(SelectValue.pop_from(self.full_header, 'Select 7', [0, 64]))
@@ -460,6 +461,11 @@ class Template():
         fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 170))
 
+        for field in [x for x in fields if type(x) != ZeroPadding]:
+            print(field.name, field, ' '.join([str(x) for x in field.bytes]))
+
+        self.header_fields = fields
+
     def __init__(self, file):
         line_size = 52
         with open(file, "rb") as f:
@@ -486,6 +492,12 @@ class Template():
             control = SingleControl(len(self.controls), byte_index, bytes)
             self.controls.append(control)
 
+        bytes = self.bytes
+
+        for idx, byte in enumerate(file_contents):
+            if byte != bytes[idx]:
+                raise Exception('bad serializing')
+
     def write(self, file):
         with open(file, "wb") as f:
             f.write(self.bytes)
@@ -510,10 +522,12 @@ class Template():
 
     @property
     def bytes(self):
-        bytes = bytearray(self.header)
+        bytes = bytearray(Template.MESSAGE_START)
+        for field in self.header_fields:
+            bytes.extend(field.bytes)
         for control in self.controls:
             bytes.extend(control.bytes)
-        bytes.extend(self.footer)
+        bytes.extend(Template.MESSAGE_END)
         return bytes
 
 template = Template(sys.argv[1])
@@ -522,4 +536,3 @@ template = Template(sys.argv[1])
 # template.print_distinct('unknown3')
 # print(template.bytes)
 # template.write(sys.argv[2])
-print(len(template.full_header), template.full_header[:4], sys.argv[1])
