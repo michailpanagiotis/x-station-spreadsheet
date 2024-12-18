@@ -159,18 +159,19 @@ indices = [
 class RawBytes():
     @classmethod
     def pop_from(cls, other_bytes, name, size, *args, **kwargs):
-        if not isinstance(other_bytes, bytearray):
-            raise Exception('expecting a bytearray')
-
-        bytes = bytearray(other_bytes[:size])
+        instance = cls(name, other_bytes[:size], *args, **kwargs)
 
         if isinstance(other_bytes, bytearray):
-            for _ in range(size):
+            for _ in range(len(instance)):
                 other_bytes.pop(0)
 
-        return cls(name, bytes, *args, **kwargs)
+        return instance
+
 
     def __init__(self, name, bytes, valid_values=(), hidden=False, aliases=()):
+        if not isinstance(bytes, bytearray):
+            raise Exception('expecting a bytearray')
+
         self.name = name
         self.bytes = bytearray(bytes)
 
