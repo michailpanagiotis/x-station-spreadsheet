@@ -174,11 +174,16 @@ class NumericValue(Field):
         return '<%s>%s' % (self.name, self.bytes[0])
 
 class ZeroPadding(Field):
-    def __init__(self, name, num_bytes, *args, **kwargs):
-        super().__init__(name, b''.join([b'\x00'] * num_bytes), *args, **kwargs)
+    def __init__(self, name, value, *args, **kwargs):
+        if len(value) != 4:
+            raise Exception('bad length')
+        for b in value:
+            if b !=0 :
+                raise Exception('non-zero padding')
+        super().__init__(name, value, *args, **kwargs)
 
     def __repr__(self):
-        return '<zeros>%s' % len(self)
+        return ''
 
 class BitMap(Field):
     def __init__(self, ms_name, ls_name, byte, *args, **kwargs):
@@ -188,7 +193,7 @@ class BitMap(Field):
 
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
-        return '<%s>%s|<%s>%s' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
+        return '<%s|%s>%s|%s' % (self._ms_name, self._ls_name, formatted[:4], formatted[4:])
 
 class SysexValue(Field):
     def __init__(self, name, value, *args, **kwargs):
@@ -197,7 +202,7 @@ class SysexValue(Field):
         super().__init__(name, bytes(value), *args, **kwargs)
 
     def __repr__(self):
-        return '<%s>%s' % (self.name, ''.join([hex(x) for x in self.bytes]))
+        return '<%s>%s...' % (self.name, hex(self.bytes[0]))
 
 class StringValue(Field):
     def __init__(self, name, value, *args, **kwargs):
@@ -217,15 +222,15 @@ class SingleControl(dict):
 
         fields = []
         name = bytes(cmd[:name_length])
-        fields.append(StringValue('Name', name, aliases=['Control name']))
+        fields.append(StringValue('Name', bytes(cmd[:name_length]), aliases=['Control name']))
         cmd = cmd[name_length:]
 
         fields.append(NumericValue('Type', cmd.pop(0), aliases=['Control Type']))
         fields.append(NumericValue('Low', cmd.pop(0), aliases=['Template', 'Velocity', 'MMC Command']))
         fields.append(NumericValue('High', cmd.pop(0)))
-        fields.append(BitMap('Ports', 'Button type', cmd.pop(0)))
-        fields.append(NumericValue('Pot Type', cmd.pop(0)))
-        fields.append(NumericValue('Display Type', cmd.pop(0)))
+        fields.append(BitMap('Ports', 'Button', cmd.pop(0)))
+        fields.append(NumericValue('Pot', cmd.pop(0), aliases=['Pot / Slider Control Type']))
+        fields.append(NumericValue('Display', cmd.pop(0), aliases=['Display type']))
         fields.append(NumericValue('MSBank', cmd.pop(0), aliases=['NRPN MSBank Num']))
         fields.append(NumericValue('CC', cmd.pop(0), aliases=['Note']))
         fields.append(NumericValue('Ch', cmd.pop(0), aliases=['Channel', 'Device id']))
@@ -239,7 +244,9 @@ class SingleControl(dict):
         cmd = cmd[sysex_length:]
 
         fields.append(NumericValue('Step', cmd.pop(0)))
-        fields.append(ZeroPadding('Padding', 4))
+
+        padding = bytes(cmd[:4])
+        fields.append(ZeroPadding('Zeros', padding))
 
         cmd = cmd[4:]
 
@@ -248,13 +255,14 @@ class SingleControl(dict):
 
         self.index = idx
         self.byte_index = byte_index
-        self.name = name
+        self.full_name = ''.join([chr(x) for x in name])
+        self.name = self.full_name.strip()
         self._fields = fields
         for field in fields:
             self[field.name] = field.bytes
 
     def __str__(self):
-        return '%s' % (' '.join([str(x) for x in self._fields]))
+        return '%s' % (' '.join([str(x) for x in self._fields if x.name != 'Name']))
 
     @property
     def bytes(self):
@@ -307,7 +315,8 @@ class Template():
 
     def print_all(self):
         for control in self.controls:
-            print(control.byte_index, control.byte_index + len(control), control.name, control)
+            print('')
+            print('%s %s\t: %s' % (control.byte_index, control.full_name, control))
 
     def print_distinct(self, fieldName):
         print(set([c[fieldName] for c in self.controls]), sys.argv[1])
