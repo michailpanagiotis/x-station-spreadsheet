@@ -157,68 +157,57 @@ indices = [
     { 'section': '???', 'legend': '???' },
 ]
 
-class NumericValue(dict):
+class Field():
+    def __init__(self, name, bytes, aliases=[]):
+        self.name = name
+        self.bytes = bytes
+        self.aliases = aliases
+
+    def __len__(self):
+        return len(self.bytes)
+
+class NumericValue(Field):
     def __init__(self, name, byte, aliases=[]):
-        self.name = name
-        self._byte = byte
-        self._bytes = [byte]
         self._aliases = aliases
-        dict.__init__(self, name=name, byte=byte)
+        super().__init__(name, bytes([byte]))
 
     def __repr__(self):
-        return '<%s>%s' % (self.name, self._byte)
+        return '<%s>%s' % (self.name, self.bytes[0])
 
-    def __len__(self):
-        return 1
-
-class ZeroPadding():
+class ZeroPadding(Field):
     def __init__(self, name, num_bytes):
-        self.name = name
-        self._num_bytes = num_bytes
-        self._bytes = b''.join([b'\x00'] * num_bytes)
+        super().__init__(name, b''.join([b'\x00'] * num_bytes))
 
     def __repr__(self):
-        return '<zeros>%s' % self._num_bytes
+        return '<zeros>%s' % len(self)
 
-    def __len__(self):
-        return self._num_bytes
-
-class BitMap():
+class BitMap(Field):
     def __init__(self, ms_name, ls_name, byte):
         self._ms_name = ms_name
         self._ls_name = ls_name
-        self._bytes = bytes([byte])
-        self.name = '%s|%s' % (ms_name, ls_name)
+        super().__init__('%s|%s' % (ms_name, ls_name), bytes([byte]))
 
     def __repr__(self):
-        formatted = "{:08b}".format(self._bytes[0])
+        formatted = "{:08b}".format(self.bytes[0])
         return '<%s>%s|<%s>%s' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
 
-    def __len__(self):
-        return 1
-
-class SysexValue():
+class SysexValue(Field):
     def __init__(self, name, value):
-        self.name = name
         if len(value) != 18:
             raise Exception('bad length')
-        self._bytes = bytes(value)
+        super().__init__(name, bytes(value))
 
     def __repr__(self):
-        return '<%s>%s' % (self.name, ''.join([hex(x) for x in self._bytes]))
+        return '<%s>%s' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
-class StringValue():
+class StringValue(Field):
     def __init__(self, name, value):
-        self.name = name
         if len(value) != 16:
             raise Exception('bad length')
-        self._bytes = bytes(value)
+        super().__init__(name, bytes(value))
 
     def __repr__(self):
-        return '<%s>%s' % (self.name, ''.join([chr(x) for x in self._bytes]).strip())
-
-    def __len__(self):
-        return len(self._bytes)
+        return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
 
 class SingleControl(dict):
     def __init__(self, idx, position, cmd, name_length=16, sysex_length=18):
@@ -263,7 +252,7 @@ class SingleControl(dict):
         self.name = name
         self._fields = fields
         for field in fields:
-            self[field.name] = bytes(field._bytes)
+            self[field.name] = field.bytes
 
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self._fields]))
@@ -272,7 +261,7 @@ class SingleControl(dict):
     def _bytes(self):
         _bytes = bytearray()
         for field in self._fields:
-            _bytes.extend(field._bytes)
+            _bytes.extend(field.bytes)
         return _bytes
 
     @property
