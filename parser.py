@@ -209,7 +209,7 @@ class StringValue(Field):
         return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
 
 class SingleControl(dict):
-    def __init__(self, idx, position, cmd, name_length=16, sysex_length=18):
+    def __init__(self, idx, byte_index, cmd, name_length=16, sysex_length=18):
         if len(cmd) != 52:
             raise Exception('bad length')
 
@@ -246,8 +246,8 @@ class SingleControl(dict):
         if len(cmd) != 0:
             raise Exception('non parsed fields')
 
-        self._idx = idx
-        self.position = position
+        self.index = idx
+        self.byte_index = byte_index
         self.name = name
         self._fields = fields
         for field in fields:
@@ -257,17 +257,17 @@ class SingleControl(dict):
         return '%s' % (' '.join([str(x) for x in self._fields]))
 
     @property
-    def _bytes(self):
-        _bytes = bytearray()
+    def bytes(self):
+        bytes = bytearray()
         for field in self._fields:
-            _bytes.extend(field.bytes)
-        return _bytes
+            bytes.extend(field.bytes)
+        return bytes
 
     @property
     def legend(self):
-        if self._idx < len(indices):
-            selector = '(%s)' % indices[self._idx]['selector'] if 'selector' in indices[self._idx] else ''
-            return '%s %s > %s\t' % (indices[self._idx]['section'], selector, indices[self._idx]['legend'])
+        if self.index < len(indices):
+            selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
+            return '%s %s > %s\t' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
         return ''
 
     def __getitem__(self, key):
@@ -277,7 +277,7 @@ class SingleControl(dict):
         return field
 
     def __len__(self):
-        return len(self._bytes)
+        return len(self.bytes)
 
 class Template():
     def __init__(self, file):
@@ -286,28 +286,28 @@ class Template():
         self.controls = []
         self.footer = []
         with open(file, "rb") as f:
-            all_bytes = f.read()
+            file_contents = f.read()
 
-        self.header = all_bytes[:offset]
-        for x in range(offset, len(all_bytes), line_size):
-            if x + 52 > len(all_bytes):
-                self.footer = all_bytes[x:]
+        self.header = file_contents[:offset]
+        for x in range(offset, len(file_contents), line_size):
+            if x + 52 > len(file_contents):
+                self.footer = file_contents[x:]
                 break;
 
-            line = all_bytes[x : x + line_size]
+            line = file_contents[x : x + line_size]
             control = SingleControl(len(self.controls), x, line)
             self.controls.append(control)
 
     def write(self, file):
         with open(file, "wb") as f:
-            f.write(self._bytes)
+            f.write(self.bytes)
 
     def __str__(self):
        return '\n'.join([str(x) for x in self.controls])
 
     def print_all(self):
         for control in self.controls:
-            print(control.position, control.position + len(control), control.name, control)
+            print(control.byte_index, control.byte_index + len(control), control.name, control)
 
     def print_distinct(self, fieldName):
         print(set([c[fieldName] for c in self.controls]), sys.argv[1])
@@ -317,18 +317,18 @@ class Template():
             print('%s %s %s %s' % (line.legend, line['name'], line['CC|Note'], line[fieldName]))
 
     @property
-    def _bytes(self):
-        _bytes = bytearray(self.header)
+    def bytes(self):
+        bytes = bytearray(self.header)
         for control in self.controls:
-            _bytes.extend(control._bytes)
-        _bytes.extend(self.footer)
-        return _bytes
+            bytes.extend(control.bytes)
+        bytes.extend(self.footer)
+        return bytes
 
 template = Template(sys.argv[1])
 template.print_all()
 # template.print_fields('unknown3')
 # template.print_distinct('unknown3')
-# print(template._bytes)
+# print(template.bytes)
 # template.write(sys.argv[2])
 
 len(indices)
