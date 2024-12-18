@@ -167,44 +167,43 @@ class Field():
         return len(self.bytes)
 
 class NumericValue(Field):
-    def __init__(self, name, byte, aliases=[]):
-        self._aliases = aliases
-        super().__init__(name, bytes([byte]))
+    def __init__(self, name, byte, *args, **kwargs):
+        super().__init__(name, bytes([byte]), *args, **kwargs)
 
     def __repr__(self):
         return '<%s>%s' % (self.name, self.bytes[0])
 
 class ZeroPadding(Field):
-    def __init__(self, name, num_bytes):
-        super().__init__(name, b''.join([b'\x00'] * num_bytes))
+    def __init__(self, name, num_bytes, *args, **kwargs):
+        super().__init__(name, b''.join([b'\x00'] * num_bytes), *args, **kwargs)
 
     def __repr__(self):
         return '<zeros>%s' % len(self)
 
 class BitMap(Field):
-    def __init__(self, ms_name, ls_name, byte):
+    def __init__(self, ms_name, ls_name, byte, *args, **kwargs):
         self._ms_name = ms_name
         self._ls_name = ls_name
-        super().__init__('%s|%s' % (ms_name, ls_name), bytes([byte]))
+        super().__init__('%s|%s' % (ms_name, ls_name), bytes([byte]), *args, **kwargs)
 
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
         return '<%s>%s|<%s>%s' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
 
 class SysexValue(Field):
-    def __init__(self, name, value):
+    def __init__(self, name, value, *args, **kwargs):
         if len(value) != 18:
             raise Exception('bad length')
-        super().__init__(name, bytes(value))
+        super().__init__(name, bytes(value), *args, **kwargs)
 
     def __repr__(self):
         return '<%s>%s' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
 class StringValue(Field):
-    def __init__(self, name, value):
+    def __init__(self, name, value, *args, **kwargs):
         if len(value) != 16:
             raise Exception('bad length')
-        super().__init__(name, bytes(value))
+        super().__init__(name, bytes(value), *args, **kwargs)
 
     def __repr__(self):
         return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
@@ -218,7 +217,7 @@ class SingleControl(dict):
 
         fields = []
         name = bytes(cmd[:name_length])
-        fields.append(StringValue('Control name', name))
+        fields.append(StringValue('Name', name, aliases=['Control name']))
         cmd = cmd[name_length:]
 
         fields.append(NumericValue('Type', cmd.pop(0), aliases=['Control Type']))
