@@ -158,21 +158,13 @@ indices = [
 ]
 
 class NumericValue(dict):
-    def __init__(self, name, byte, hidden=False):
+    def __init__(self, name, byte):
         self.name = name
         self._byte = byte
         self._bytes = [byte]
-        self._hidden = hidden
         dict.__init__(self, name=name, byte=byte)
 
     def __repr__(self):
-        if self.name == 'unknown':
-            if self._byte:
-                return '<N>%s' % (self._byte)
-            else:
-                return '?<%s>' % (self._byte)
-        if self._hidden:
-            return '_'
         return '<%s>%s' % (self.name, self._byte)
 
     def __len__(self):
@@ -211,17 +203,12 @@ class BitMap(dict):
         return 1
 
 class StringValue(dict):
-    def __init__(self, name, value, hidden=False):
+    def __init__(self, name, value):
         self.name = name
         self._bytes = bytes(value)
-        self._hidden = hidden
         dict.__init__(self, name=name, bytes=value)
 
     def __repr__(self):
-        if self._hidden:
-            return ''
-        if self.name == 'unknown':
-            return '<S>%s' % (ascii(self._bytes))
         return '<%s>%s' % (self.name, ascii(self._bytes))
 
     def __len__(self):
