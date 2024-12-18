@@ -156,16 +156,49 @@ indices = [
     { 'section': '', 'legend': '???' },
 ]
 
-class Field():
+class RawBytes():
+    @classmethod
+    def pop_from(cls, other_bytes, name, size, *args, **kwargs):
+        bytes = bytearray(other_bytes[:size])
+        instance = cls(name, bytes, size, *args, **kwargs)
+
+        for _ in range(size):
+            other_bytes.pop(0)
+
+        return instance
+
+    def __init__(self, name, bytes, size=1, hidden=False, aliases=()):
+        if len(bytes) != size:
+            raise Exception('bad length')
+
+        self.name = name
+        self.bytes = bytes[:size]
+        self.hidden = hidden
+        self.aliases = aliases
+
+    def __str__(self):
+        return ''.join([hex(x) for x in self.bytes])
+
+    def __len__(self):
+        return len(self.bytes)
+
+class SingleByte(RawBytes):
+    @classmethod
+    def pop_from(cls, other_bytes, name, options=(), *args, **kwargs):
+        if len(options) > 0 and other_bytes[0] not in options:
+            raise Exception('unsupported option %s' % other_bytes[0])
+        return super(SingleByte, cls).pop_from(other_bytes, name, 1, *args, **kwargs)
+
+    def __str__(self):
+        return str(self.bytes[0])
+
+class Field(RawBytes):
     @classmethod
     def pop_from(cls, other_bytes, name, *args, **kwargs):
         return cls(name, other_bytes.pop(0), *args, **kwargs)
 
     def __init__(self, name, bytes, hidden=False, aliases=()):
-        self.name = name
-        self.bytes = bytes
-        self.aliases = aliases
-        self.hidden = hidden
+        super().__init__(name, bytes, 1, hidden, aliases)
 
     def __repr__(self):
         return '<%s>%s' % (self.name, str(self))
@@ -188,7 +221,7 @@ class SelectValue(NumericValue):
             raise Exception('unsupported option %s' % byte)
         super().__init__(name, byte, options, *args, **kwargs)
 
-class BitMap(Field):
+class BitMap(SingleByte):
     @classmethod
     def pop_from(cls, other_bytes, ms_name, ls_name, *args, **kwargs):
         return cls(ms_name, ls_name, other_bytes.pop(0), *args, **kwargs)
@@ -205,32 +238,16 @@ class BitMap(Field):
     def __str__(self):
         return hex(self.bytes[0])
 
-class RawBytes(Field):
-    @classmethod
-    def pop_from(cls, other_bytes, name, size, *args, **kwargs):
-        bytes = bytearray()
-        for _ in range(size):
-            bytes.append(other_bytes.pop(0))
-        return cls(name, bytes, size, *args, **kwargs)
-
-    def __init__(self, name, value, size, *args, **kwargs):
-        if len(value) != size:
-            raise Exception('bad length')
-        super().__init__(name, bytes(value), *args, **kwargs)
-
-    def __str__(self):
-        return ''.join([hex(x) for x in self.bytes])
-
 class StringValue(RawBytes):
     def __str__(self):
         return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
 class ZeroPadding(RawBytes):
-    def __init__(self, name, other_bytes, *args, **kwargs):
-        for b in other_bytes:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for b in self.bytes:
             if b !=0 :
                 raise Exception('non-zero padding')
-        super().__init__(name, other_bytes, *args, **kwargs)
 
     def __str__(self):
         return str(len(self))
