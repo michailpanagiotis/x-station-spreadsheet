@@ -159,7 +159,7 @@ indices = [
 class RawBytes():
     @classmethod
     def _pop_from(cls, other_bytes, size, name, *args, **kwargs):
-        instance = cls(name, other_bytes[:size], *args, **kwargs)
+        instance = cls(other_bytes[:size], name, *args, **kwargs)
 
         if isinstance(other_bytes, bytearray):
             for _ in range(len(instance)):
@@ -167,8 +167,7 @@ class RawBytes():
 
         return instance
 
-
-    def __init__(self, name, bytes, valid_values=(), hidden=False, aliases=()):
+    def __init__(self, bytes, name, valid_values=(), hidden=False, aliases=(), **kwargs):
         if not isinstance(bytes, bytearray):
             raise Exception('expecting a bytearray')
 
@@ -212,7 +211,7 @@ class StringValue(RawBytes):
 
 class ZeroPadding(RawBytes):
     @classmethod
-    def pop_from(cls, other_bytes, size,  *args, **kwargs):
+    def pop_from(cls, other_bytes, size, *args, **kwargs):
         return super(ZeroPadding, cls)._pop_from(other_bytes, size, *args, **kwargs, valid_values=(0,))
 
     def __str__(self):
@@ -221,10 +220,10 @@ class ZeroPadding(RawBytes):
 class BitMap(SingleByte):
     @classmethod
     def pop_from(cls, other_bytes, ms_name, ls_name, *args, **kwargs):
-        return super(BitMap, cls).pop_from(other_bytes, '%s|%s' % (ms_name, ls_name), ms_name, ls_name, *args, **kwargs)
+        return super(BitMap, cls).pop_from(other_bytes, '%s|%s' % (ms_name, ls_name), *args, **kwargs, ms_name=ms_name, ls_name=ls_name)
 
-    def __init__(self, name, bytes, ms_name, ls_name, *args, **kwargs):
-        super().__init__(name, bytes, *args, **kwargs)
+    def __init__(self, bytes, *args, ms_name, ls_name, **kwargs):
+        super().__init__(bytes, *args, **kwargs)
         self._ms_name = ms_name
         self._ls_name = ls_name
 
