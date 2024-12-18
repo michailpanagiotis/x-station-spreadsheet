@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import json
-import pprint
-import re
 import sys
 
 indices = [
@@ -12,8 +9,8 @@ indices = [
     { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 1' },
     { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 1' },
     { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 1' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 1' },
     { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 1' },
     { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 1' },
@@ -23,8 +20,8 @@ indices = [
     { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 2' },
     { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 2' },
     { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 2' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 2' },
     { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 2' },
     { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 2' },
@@ -34,8 +31,8 @@ indices = [
     { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 3' },
     { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 3' },
     { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 3' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 3' },
     { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 3' },
     { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 3' },
@@ -45,23 +42,23 @@ indices = [
     { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Noise' },
     { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Noise' },
     { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Noise' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
-    { 'section': '???? OSCS - MIXER', 'legend': '????' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Noise' },
     { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Noise' },
     { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Noise' },
     { 'section': 'OSCS - MIXER', 'legend': 'SYNC', 'selector': 'Noise' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'FILTERS', 'legend': 'FREQUENCY', 'selector': '1' },
     { 'section': 'FILTERS', 'legend': 'RESONANCE', 'selector': '1' },
     { 'section': 'FILTERS', 'legend': 'KEY TRACK', 'selector': '1' },
@@ -109,14 +106,14 @@ indices = [
     { 'section': 'MOD ENV / ENV 3', 'legend': 'F1', 'selector': 'Mod' },
     { 'section': 'MOD ENV / ENV 3', 'legend': 'F2', 'selector': 'Mod' },
     { 'section': 'MOD ENV / ENV 3', 'legend': 'F3', 'selector': 'Mod' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'AMP ENV', 'legend': 'MONO / POLY', 'selector': 'Env 3' },
     { 'section': 'AMP ENV', 'legend': 'GATE', 'selector': 'Env 3' },
     { 'section': 'AMP ENV', 'legend': 'HOLD', 'selector': 'Env 3' },
@@ -129,10 +126,10 @@ indices = [
     { 'section': 'VELOCITY', 'legend': 'VELOCITY' },
     { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Amp' },
     { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Amp' },
-    { 'section': '??? VELOCITY', 'legend': '???', 'selector': 'Amp' },
+    { 'section': '', 'legend': '???', 'selector': 'Amp' },
     { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Mod' },
     { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Mod' },
-    { 'section': '??? VELOCITY', 'legend': '???', 'selector': 'Mod' },
+    { 'section': '', 'legend': '???', 'selector': 'Mod' },
     { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Env 3' },
     { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Env 3' },
     { 'section': 'ARP', 'legend': 'TEMPO' },
@@ -147,21 +144,22 @@ indices = [
     { 'section': 'PITCH/MOD', 'legend': 'MOD WHEEL' },
     { 'section': 'TOUCHPAD', 'legend': 'X' },
     { 'section': 'TOUCHPAD', 'legend': 'Y' },
-    { 'section': '???', 'legend': '???' },
-    { 'section': '???', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
     { 'section': 'TRANSPORT', 'legend': 'STOP' },
     { 'section': 'TRANSPORT', 'legend': 'PLAY' },
     { 'section': 'TRANSPORT', 'legend': 'REC' },
     { 'section': 'TRANSPORT', 'legend': 'FF' },
     { 'section': 'TRANSPORT', 'legend': 'RW' },
-    { 'section': '???', 'legend': '???' },
+    { 'section': '', 'legend': '???' },
 ]
 
 class Field():
-    def __init__(self, name, bytes, aliases=[]):
+    def __init__(self, name, bytes, hidden=False, aliases=[]):
         self.name = name
         self.bytes = bytes
         self.aliases = aliases
+        self.hidden = hidden
 
     def __len__(self):
         return len(self.bytes)
@@ -171,7 +169,7 @@ class NumericValue(Field):
         super().__init__(name, bytes([byte]), *args, **kwargs)
 
     def __repr__(self):
-        return '<%s>%s' % (self.name, self.bytes[0])
+        return '<%s:%s>' % (self.name, self.bytes[0])
 
 class ZeroPadding(Field):
     def __init__(self, name, value, *args, **kwargs):
@@ -193,7 +191,7 @@ class BitMap(Field):
 
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
-        return '<%s|%s>%s|%s' % (self._ms_name, self._ls_name, formatted[:4], formatted[4:])
+        return '<%s:%s|%s:%s>' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
 
 class SysexValue(Field):
     def __init__(self, name, value, *args, **kwargs):
@@ -202,7 +200,7 @@ class SysexValue(Field):
         super().__init__(name, bytes(value), *args, **kwargs)
 
     def __repr__(self):
-        return '<%s>%s...' % (self.name, hex(self.bytes[0]))
+        return '<%s:%s>' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
 class StringValue(Field):
     def __init__(self, name, value, *args, **kwargs):
@@ -235,12 +233,12 @@ class SingleControl(dict):
         fields.append(NumericValue('CC', cmd.pop(0), aliases=['Note']))
         fields.append(NumericValue('Ch', cmd.pop(0), aliases=['Channel', 'Device id']))
         fields.append(NumericValue('Template', cmd.pop(0), aliases=['Template', 'Velocity', 'MMC Command']))
-        fields.append(NumericValue('unknown1', cmd.pop(0)))
-        fields.append(NumericValue('unknown2', cmd.pop(0)))
-        fields.append(NumericValue('unknown3', cmd.pop(0)))
+        fields.append(NumericValue('N/A 1', cmd.pop(0)))
+        fields.append(NumericValue('N/A 2', cmd.pop(0)))
+        fields.append(NumericValue('N/A 3', cmd.pop(0)))
 
         sysex = bytes(cmd[:sysex_length])
-        fields.append(SysexValue('Sysex', sysex))
+        fields.append(SysexValue('Sysex', sysex, hidden=True))
         cmd = cmd[sysex_length:]
 
         fields.append(NumericValue('Step', cmd.pop(0)))
@@ -272,11 +270,14 @@ class SingleControl(dict):
         return bytes
 
     @property
+    def section(self):
+        return indices[self.index]['section']
+
+    @property
     def legend(self):
-        if self.index < len(indices):
-            selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
-            return '%s %s > %s\t' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
-        return ''
+        selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
+        legend = '%s%s>%s\t' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
+        return legend.rjust(30, ' ')
 
     def __getitem__(self, key):
         field = next((x for x in self._fields if x.name == key), None)
@@ -288,23 +289,33 @@ class SingleControl(dict):
         return len(self.bytes)
 
 class Template():
-    def __init__(self, file):
-        offset = 405
+    MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
+    MESSAGE_END=b'\x124\xf7'
+
+    def parse_controls(self, control_bytes):
         line_size = 52
         self.controls = []
-        self.footer = []
+        for index, bytes in enumerate([control_bytes[i:i + line_size] for i in range(0, len(control_bytes), line_size)]):
+            byte_index = index * line_size + len(self.full_header)
+            control = SingleControl(index, byte_index, bytes)
+            self.controls.append(control)
+
+    def __init__(self, file):
         with open(file, "rb") as f:
             file_contents = f.read()
 
-        self.header = file_contents[:offset]
-        for x in range(offset, len(file_contents), line_size):
-            if x + 52 > len(file_contents):
-                self.footer = file_contents[x:]
-                break;
+        offset = 405
+        self.full_header = file_contents[:offset]
 
-            line = file_contents[x : x + line_size]
-            control = SingleControl(len(self.controls), x, line)
-            self.controls.append(control)
+        if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
+            raise Exception('bad header')
+
+        if file_contents[-len(Template.MESSAGE_END):] != Template.MESSAGE_END:
+            raise Exception('bad footer')
+
+        controls = file_contents[len(self.full_header):-len(Template.MESSAGE_END)]
+
+        self.parse_controls(controls)
 
     def write(self, file):
         with open(file, "wb") as f:
@@ -313,10 +324,13 @@ class Template():
     def __str__(self):
        return '\n'.join([str(x) for x in self.controls])
 
-    def print_all(self):
+    def print_all(self, only_unknown=False):
         for control in self.controls:
-            print('')
-            print('%s %s\t: %s' % (control.byte_index, control.full_name, control))
+            if only_unknown and control.section != '':
+                continue
+            # print('---- %s | %s | %s'  % (control.legend, control.full_name, control.byte_index, ))
+            print(control.index, control.legend, control)
+            # print('')
 
     def print_distinct(self, fieldName):
         print(set([c[fieldName] for c in self.controls]), sys.argv[1])
@@ -334,10 +348,9 @@ class Template():
         return bytes
 
 template = Template(sys.argv[1])
-template.print_all()
+# template.print_all(only_unknown=True)
 # template.print_fields('unknown3')
 # template.print_distinct('unknown3')
 # print(template.bytes)
 # template.write(sys.argv[2])
-
-len(indices)
+print(template.full_header, sys.argv[1])
