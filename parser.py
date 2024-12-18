@@ -165,16 +165,38 @@ class Field():
         return len(self.bytes)
 
 class NumericValue(Field):
+    @classmethod
+    def pop_from(cls, other_bytes, name, *args, **kwargs):
+        return cls(name, other_bytes.pop(0), *args, **kwargs)
+
     def __init__(self, name, byte, *args, **kwargs):
         super().__init__(name, bytes([byte]), *args, **kwargs)
 
     def __repr__(self):
         return '<%s:%s>' % (self.name, self.bytes[0])
 
+class SelectValue(Field):
+    @classmethod
+    def pop_from(cls, other_bytes, name, options, *args, **kwargs):
+        return cls(name, other_bytes.pop(0), options, *args, **kwargs)
+
+    def __init__(self, name, byte, options=[], *args, **kwargs):
+        if byte not in options:
+            raise Exception('unsupported option %s' % byte)
+        super().__init__(name, bytes([byte]), *args, **kwargs)
+
+    def __repr__(self):
+        return '<%s:%s>' % (self.name, self.bytes[0])
+
 class ZeroPadding(Field):
+    @classmethod
+    def pop_from(cls, other_bytes, name, num_zeros, *args, **kwargs):
+        bytes = bytearray()
+        for i in range(num_zeros):
+            bytes.append(other_bytes.pop(0))
+        return cls(name, bytes, *args, **kwargs)
+
     def __init__(self, name, value, *args, **kwargs):
-        if len(value) != 4:
-            raise Exception('bad length')
         for b in value:
             if b !=0 :
                 raise Exception('non-zero padding')
@@ -203,8 +225,15 @@ class SysexValue(Field):
         return '<%s:%s>' % (self.name, ''.join([hex(x) for x in self.bytes]))
 
 class StringValue(Field):
-    def __init__(self, name, value, *args, **kwargs):
-        if len(value) != 16:
+    @classmethod
+    def pop_from(cls, other_bytes, name, size=16, *args, **kwargs):
+        bytes = bytearray()
+        for i in range(size):
+            bytes.append(other_bytes.pop(0))
+        return cls(name, bytes, size, *args, **kwargs)
+
+    def __init__(self, name, value, size=16, *args, **kwargs):
+        if len(value) != size:
             raise Exception('bad length')
         super().__init__(name, bytes(value), *args, **kwargs)
 
@@ -292,20 +321,151 @@ class Template():
     MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
     MESSAGE_END=b'\x124\xf7'
 
-    def parse_controls(self, control_bytes):
-        line_size = 52
-        self.controls = []
-        for index, bytes in enumerate([control_bytes[i:i + line_size] for i in range(0, len(control_bytes), line_size)]):
-            byte_index = index * line_size + len(self.full_header)
-            control = SingleControl(index, byte_index, bytes)
-            self.controls.append(control)
+    def parse_header(self):
+        if len(self.full_header) != 396:
+            raise Exception('bad header bytes length')
+
+        fields = []
+        fields.append(SelectValue.pop_from(self.full_header, 'N/A 1', [8, 17, 19, 24, 25]))
+        fields.append(SelectValue.pop_from(self.full_header, 'N/A 2', [1, 2, 3, 10]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(NumericValue.pop_from(self.full_header, 'N/A 3'))
+        fields.append(StringValue.pop_from(self.full_header, 'Name', 30))
+        fields.append(SelectValue.pop_from(self.full_header, 'Channel', [0, 16]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Midi port', [0, 16, 48, 112]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 1', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 2', [4, 5]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 3', [0, 2]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 4', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 5', [0, 2]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 6', [48, 64, 79]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 7', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 8', [64, 78]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 9', [64, 127]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 10', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 11', [127]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 3))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 12', [0,1]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 13', [0,49]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 14', [64,68]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 15', [43,64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 16', [127]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 6))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 17', [0,18]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 18', [3,5]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [90]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0,64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 7))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0,1]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [20]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 5))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 32]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 3))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [100]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 3))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [52, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64, 78]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64, 72]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 6))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 4))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [127]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64, 78]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 4))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [3, 4]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [90]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 8))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [20]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64, 74]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [6, 44, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0,32]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [96, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 36]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [100]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64, 65]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64, 98]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64, 74]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 6))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 3))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 1]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 1]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Midi port', [0, 112]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 56]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 60, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 4))
+        fields.append(SelectValue.pop_from(self.full_header, 'Midi port', [0, 112]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 2]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 69]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 72, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 5))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 2]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 5))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 2]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 127]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 64]))
+        fields.append(SelectValue.pop_from(self.full_header, 'Select 19', [0, 7]))
+        fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 170))
 
     def __init__(self, file):
+        line_size = 52
         with open(file, "rb") as f:
             file_contents = f.read()
 
-        offset = 405
-        self.full_header = file_contents[:offset]
+        self.controls = []
 
         if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
             raise Exception('bad header')
@@ -313,9 +473,18 @@ class Template():
         if file_contents[-len(Template.MESSAGE_END):] != Template.MESSAGE_END:
             raise Exception('bad footer')
 
-        controls = file_contents[len(self.full_header):-len(Template.MESSAGE_END)]
+        body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
+        offset = 405 - len(Template.MESSAGE_START)
 
-        self.parse_controls(controls)
+        self.full_header = bytearray(body[:offset])
+        controls = body[len(self.full_header):]
+
+        self.parse_header()
+
+        for byte_index in range(0, len(controls), line_size):
+            bytes = controls[byte_index : byte_index + line_size]
+            control = SingleControl(len(self.controls), byte_index, bytes)
+            self.controls.append(control)
 
     def write(self, file):
         with open(file, "wb") as f:
@@ -353,4 +522,4 @@ template = Template(sys.argv[1])
 # template.print_distinct('unknown3')
 # print(template.bytes)
 # template.write(sys.argv[2])
-print(template.full_header, sys.argv[1])
+print(len(template.full_header), template.full_header[:4], sys.argv[1])
