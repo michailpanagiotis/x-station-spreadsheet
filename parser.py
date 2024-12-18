@@ -157,70 +157,36 @@ indices = [
 ]
 
 class Field():
+    @classmethod
+    def pop_from(cls, other_bytes, name, *args, **kwargs):
+        return cls(name, other_bytes.pop(0), *args, **kwargs)
+
     def __init__(self, name, bytes, hidden=False, aliases=()):
         self.name = name
         self.bytes = bytes
         self.aliases = aliases
         self.hidden = hidden
 
+    def __repr__(self):
+        return '<%s>%s' % (self.name, str(self))
+
     def __len__(self):
         return len(self.bytes)
 
 class NumericValue(Field):
-    @classmethod
-    def pop_from(cls, other_bytes, name, *args, **kwargs):
-        return cls(name, other_bytes.pop(0), *args, **kwargs)
-
-    def __init__(self, name, byte, *args, **kwargs):
-        super().__init__(name, bytes([byte]), *args, **kwargs)
-
-    def __repr__(self):
-        return '<%s:%s>' % (self.name, self.bytes[0])
-
-    def __str__(self):
-        return str(self.bytes[0])
-
-    def csv(self):
-        return str(self.bytes[0])
-
-class SelectValue(Field):
-    @classmethod
-    def pop_from(cls, other_bytes, name, options, *args, **kwargs):
-        return cls(name, other_bytes.pop(0), options, *args, **kwargs)
-
     def __init__(self, name, byte, options=(), *args, **kwargs):
-        if byte not in options:
+        if len(options) > 0 and byte not in options:
             raise Exception('unsupported option %s' % byte)
         super().__init__(name, bytes([byte]), *args, **kwargs)
 
     def __str__(self):
         return str(self.bytes[0])
 
-    def __repr__(self):
-        return '<%s:%s>' % (self.name, self.bytes[0])
-
-class ZeroPadding(Field):
-    @classmethod
-    def pop_from(cls, other_bytes, name, num_zeros, *args, **kwargs):
-        bytes = bytearray()
-        for _ in range(num_zeros):
-            bytes.append(other_bytes.pop(0))
-        return cls(name, bytes, *args, **kwargs)
-
-    def __init__(self, name, value, *args, **kwargs):
-        for b in value:
-            if b !=0 :
-                raise Exception('non-zero padding')
-        super().__init__(name, value, *args, **kwargs)
-
-    def __repr__(self):
-        return ''
-
-    def __str__(self):
-        return str(len(self))
-
-    def csv(self):
-        return str(len(self))
+class SelectValue(NumericValue):
+    def __init__(self, name, byte, options, *args, **kwargs):
+        if byte not in options:
+            raise Exception('unsupported option %s' % byte)
+        super().__init__(name, byte, options, *args, **kwargs)
 
 class BitMap(Field):
     @classmethod
@@ -239,52 +205,35 @@ class BitMap(Field):
     def __str__(self):
         return hex(self.bytes[0])
 
-    def csv(self):
-        return hex(self.bytes[0])
-
-class SysexValue(Field):
+class RawBytes(Field):
     @classmethod
-    def pop_from(cls, other_bytes, name,  *args, **kwargs):
-        bytes = bytearray()
-        for _ in range(18):
-            bytes.append(other_bytes.pop(0))
-        return cls(name, bytes, *args, **kwargs)
-
-    def __init__(self, name, value, *args, **kwargs):
-        if len(value) != 18:
-            raise Exception('bad length')
-        super().__init__(name, bytes(value), *args, **kwargs)
-
-    def __repr__(self):
-        return '<%s:%s>' % (self.name, ''.join([hex(x) for x in self.bytes]))
-
-    def __str__(self):
-        return ''.join([hex(x) for x in self.bytes])
-
-    def csv(self):
-        return ''.join([hex(x) for x in self.bytes])
-
-class StringValue(Field):
-    @classmethod
-    def pop_from(cls, other_bytes, name, size=16, *args, **kwargs):
+    def pop_from(cls, other_bytes, name, size, *args, **kwargs):
         bytes = bytearray()
         for _ in range(size):
             bytes.append(other_bytes.pop(0))
         return cls(name, bytes, size, *args, **kwargs)
 
-    def __init__(self, name, value, size=16, *args, **kwargs):
+    def __init__(self, name, value, size, *args, **kwargs):
         if len(value) != size:
             raise Exception('bad length')
         super().__init__(name, bytes(value), *args, **kwargs)
 
-    def __repr__(self):
-        return '<%s>%s' % (self.name, ''.join([chr(x) for x in self.bytes]).strip())
+    def __str__(self):
+        return ''.join([hex(x) for x in self.bytes])
 
+class StringValue(RawBytes):
     def __str__(self):
         return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
-    def csv(self):
-        return ''.join([chr(x) for x in self.bytes]).strip()
+class ZeroPadding(RawBytes):
+    def __init__(self, name, other_bytes, *args, **kwargs):
+        for b in other_bytes:
+            if b !=0 :
+                raise Exception('non-zero padding')
+        super().__init__(name, other_bytes, *args, **kwargs)
+
+    def __str__(self):
+        return str(len(self))
 
 class SingleControl(dict):
     @classmethod
@@ -301,7 +250,7 @@ class SingleControl(dict):
             cmd = bytearray(cmd)
 
         fields = []
-        fields.append(StringValue.pop_from(cmd, 'Name', aliases=['Control name']))
+        fields.append(StringValue.pop_from(cmd, 'Name', size=16, aliases=['Control name']))
         fields.append(NumericValue.pop_from(cmd, 'Type', aliases=['Control Type']))
         fields.append(NumericValue.pop_from(cmd, 'Low', aliases=['Template', 'Velocity', 'MMC Command']))
         fields.append(NumericValue.pop_from(cmd, 'High'))
@@ -315,7 +264,7 @@ class SingleControl(dict):
         fields.append(NumericValue.pop_from(cmd, 'N/A 1'))
         fields.append(NumericValue.pop_from(cmd, 'N/A 2'))
         fields.append(NumericValue.pop_from(cmd, 'N/A 3'))
-        fields.append(SysexValue.pop_from(cmd, 'Sysex', hidden=True))
+        fields.append(RawBytes.pop_from(cmd, 'Sysex', size=18, hidden=True))
         fields.append(NumericValue.pop_from(cmd, 'Step'))
         fields.append(ZeroPadding.pop_from(cmd, 'Zeros', 4))
 
@@ -344,7 +293,7 @@ class SingleControl(dict):
         return j
 
     def csv(self):
-        return '%s,%s' % (self.legend.strip(), ','.join([x.csv() for x in self.fields]))
+        return '%s,%s' % (self.legend.strip(), ','.join([str(x) for x in self.fields]))
 
     def write_to_sheet(self, ws, row_number):
         ws.cell(row=row_number, column=1, value=self.legend.strip())
@@ -390,7 +339,7 @@ class Template():
         fields.append(SelectValue.pop_from(self.full_header, 'N/A 2', [1, 2, 3, 10]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 1))
         fields.append(NumericValue.pop_from(self.full_header, 'N/A 3'))
-        fields.append(StringValue.pop_from(self.full_header, 'Name', 30))
+        fields.append(StringValue.pop_from(self.full_header, 'Name', size=30))
         fields.append(SelectValue.pop_from(self.full_header, 'Channel', [0, 16]))
         fields.append(SelectValue.pop_from(self.full_header, 'Midi port | Keyb MIDI Chan', [0, 16, 48, 53, 54, 112]))
         fields.append(ZeroPadding.pop_from(self.full_header, 'Zeros', 2))
