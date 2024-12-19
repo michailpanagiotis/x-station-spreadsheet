@@ -1,3 +1,7 @@
 *.syx
+*.xlsx
+.DS_Store
 factory_templates/
 additional_templates/
+
+__pycache__/

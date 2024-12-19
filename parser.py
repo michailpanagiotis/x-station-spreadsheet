@@ -674,19 +674,3 @@ class Template():
         if field is None:
             raise KeyError
         return field
-
-template = Template.from_syx_file(sys.argv[1])
-# template.print_all(only_unknown=True)
-# template.print_fields('unknown3')
-# template.print_distinct('unknown3')
-# print(template.bytes)
-# template.write(sys.argv[2])
-# template.print_controls()
-
-template.to_spreadsheet('test.xlsx')
-
-template2 = Template.from_spreadsheet('test.xlsx')
-
-print(sys.argv[1])
-if template!=template2:
-    raise Exception('serialize/deserialize error')
