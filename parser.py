@@ -244,7 +244,7 @@ class StringValue(RawBytes):
         return bytearray(string.encode('ascii').ljust(cls.NUM_BYTES, b' '))
 
     def __str__(self):
-        return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
+        return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).rstrip()
 
 class ZeroPadding(RawBytes):
     DEFAULTS = {
@@ -681,9 +681,12 @@ template = Template.from_syx_file(sys.argv[1])
 # template.print_distinct('unknown3')
 # print(template.bytes)
 # template.write(sys.argv[2])
-template.print_controls()
+# template.print_controls()
 
 template.to_spreadsheet('test.xlsx')
 
 template2 = Template.from_spreadsheet('test.xlsx')
-print(len(template), len(template2), template==template2)
+
+print(sys.argv[1])
+if template!=template2:
+    raise Exception('serialize/deserialize error')
