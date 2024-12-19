@@ -182,6 +182,8 @@ class RawBytes():
         raise Exception('not implemented for %s' % cls.__name__)
 
     def __init__(self, value, name=None, *args, **kwargs):
+        if value is None:
+            raise Exception('value is required')
         if isinstance(value, bytearray):
             if len(value) != type(self).NUM_BYTES:
                 raise Exception('bad number of bytes')
@@ -245,12 +247,14 @@ class StringValue(RawBytes):
         return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
 class ZeroPadding(RawBytes):
+    DEFAULTS = {
+        **RawBytes.DEFAULTS,
+        "valid_values": (0,),
+    }
+
     @classmethod
     def parse_string(cls, string):
         return bytearray(b'\x00') * cls.NUM_BYTES
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, valid_values=(0,))
 
     def __str__(self):
         return str(len(self))
@@ -287,7 +291,7 @@ Pad7 = define_field(ZeroPadding, num_bytes=7, name="Zeros")
 Pad8 = define_field(ZeroPadding, num_bytes=8, name="Zeros")
 Pad170 = define_field(ZeroPadding, num_bytes=170, name="Zeros")
 
-class SingleControl(dict):
+class SingleControl():
     FIELD_TYPES = [
         ControlName,
         define_field(NumericValue, name="Type", aliases=['Control Type']),
@@ -311,11 +315,11 @@ class SingleControl(dict):
     @classmethod
     def from_spreadsheet(cls, idx, row):
         (legend, *values) = (c.value for c in row)
-        fields = [ct(values[idx]) for idx, ct in enumerate(cls.FIELD_TYPES)]
+        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(cls.FIELD_TYPES)]
         return cls(idx, fields)
 
     @classmethod
-    def from_bytes(cls, idx, cmd, byte_index=None):
+    def from_bytes(cls, idx, cmd):
         if isinstance(cmd, bytes):
             if len(cmd) != 52:
                 raise Exception('bad length')
@@ -327,35 +331,17 @@ class SingleControl(dict):
         if len(cmd) != 0:
             raise Exception('non parsed fields')
 
-        return cls(idx, fields, byte_index)
+        return cls(idx, fields)
 
-    def __init__(self, idx, fields, byte_index=None):
+    def __init__(self, idx, fields):
         name = next(x.bytes for x in fields if x.name == 'Name')
         self.index = idx
-        self.byte_index = byte_index
         self.full_name = ''.join([chr(x) for x in name])
         self.name = self.full_name.strip()
         self.fields = fields
-        for field in fields:
-            self[field.name] = field.bytes
 
     def __str__(self):
         return '%s' % (' '.join([str(x) for x in self.fields if x.name != 'Name']))
-
-    def dict(self):
-        j = { "legend": self.legend.strip() }
-        for f in self.fields:
-            j[f.name] = str(f)
-        return j
-
-    def csv(self):
-        return '%s,%s' % (self.legend.strip(), ','.join([str(x) for x in self.fields]))
-
-    def write_to_sheet(self, ws, row_number):
-        ws.cell(row=row_number, column=1, value=self.legend.strip())
-        for idx, field in enumerate(self.fields):
-            value = str(field)
-            ws.cell(row=row_number, column=idx + 2, value=value)
 
     @property
     def bytes(self):
@@ -383,7 +369,25 @@ class SingleControl(dict):
     def __len__(self):
         return len(self.bytes)
 
+    def dict(self):
+        j = { "legend": self.legend.strip() }
+        for f in self.fields:
+            j[f.name] = str(f)
+        return j
+
+    def csv(self):
+        return '%s,%s' % (self.legend.strip(), ','.join([str(x) for x in self.fields]))
+
+    def write_to_sheet(self, ws, row_number):
+        ws.cell(row=row_number, column=1, value=self.legend.strip())
+        for idx, field in enumerate(self.fields):
+            value = str(field)
+            if value is None:
+                raise Exception('value is required')
+            ws.cell(row=row_number, column=idx + 2, value=value)
+
 class Template():
+    LINE_SIZE = 52
     MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
     MESSAGE_END=b'\x124\xf7'
     FIELD_TYPES = [
@@ -522,19 +526,10 @@ class Template():
         Pad170,
     ]
 
-    def parse_header(self):
-        if len(self.full_header) != 396:
-            raise Exception('bad header bytes length')
-
-        fields = [ct._pop_from(self.full_header) for ct in type(self).FIELD_TYPES]
-        self.header_fields = fields
-
-    def __init__(self, file):
-        line_size = 52
-        with open(file, "rb") as f:
+    @classmethod
+    def from_syx_file(cls, filename):
+        with open(filename, "rb") as f:
             file_contents = f.read()
-
-        self.controls = []
 
         if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
             raise Exception('bad header')
@@ -544,22 +539,44 @@ class Template():
 
         body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
         offset = 405 - len(Template.MESSAGE_START)
+        full_header = bytearray(body[:offset])
+        controls = body[len(full_header):]
 
-        self.full_header = bytearray(body[:offset])
-        controls = body[len(self.full_header):]
+        if len(full_header) != 396:
+            raise Exception('bad header bytes length')
 
-        self.parse_header()
+        instance = cls(
+            header_fields=[
+                ct._pop_from(full_header)
+                for ct in cls.FIELD_TYPES
+            ],
+            controls = [
+                SingleControl.from_bytes(idx, controls[i:i + cls.LINE_SIZE])
+                for idx, i in enumerate(range(0, len(controls), cls.LINE_SIZE))
+            ],
+        )
 
-        for byte_index in range(0, len(controls), line_size):
-            bytes = controls[byte_index : byte_index + line_size]
-            control = SingleControl.from_bytes(len(self.controls), bytes, byte_index)
-            self.controls.append(control)
-
-        bytes = self.bytes
+        bytes = instance.bytes
 
         for idx, byte in enumerate(file_contents):
             if byte != bytes[idx]:
                 raise Exception('bad serializing')
+
+        return instance
+
+    @classmethod
+    def from_spreadsheet(cls, filename):
+        wb = load_workbook(filename=filename)
+        ws = wb['Template configuration']
+        header_fields = [cls.FIELD_TYPES[idx](row[1].value) for idx, row in enumerate(ws.rows)]
+
+        ws = wb['Controls']
+        controls = [SingleControl.from_spreadsheet(idx, row) for idx, row in enumerate(ws.rows) if idx > 0]
+        return cls(header_fields, controls)
+
+    def __init__(self, header_fields, controls):
+        self.header_fields = header_fields
+        self.controls = controls
 
     def write(self, file):
         with open(file, "wb") as f:
@@ -567,6 +584,25 @@ class Template():
 
     def __str__(self):
        return '\n'.join([str(x) for x in self.controls])
+
+    def __len__(self):
+        return len(self.bytes)
+
+    def __eq__(self, other):
+        if not isinstance(other, Template):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        if len(self) != len(other):
+            return False
+
+        for idx, byte in enumerate(self.bytes):
+            if byte != other.bytes[idx]:
+                print('DIFFERENCE AT BYTE', idx)
+                print(self.bytes[:50])
+                print(other.bytes[:50])
+                return False
+        return True
 
     def print_all(self, only_unknown=False):
         for control in self.controls:
@@ -588,16 +624,6 @@ class Template():
         print(headers)
         for control in self.controls:
             print(control.csv())
-
-    @classmethod
-    def from_spreadsheet(cls, filename):
-        wb = load_workbook(filename=filename)
-        ws = wb['Controls']
-        for idx, row in enumerate(ws.rows):
-            if idx > 0:
-                control = SingleControl.from_spreadsheet(idx, row)
-            # for cell in row:
-            #     print(cell.column)
 
     def to_spreadsheet(self, filename):
         wb = Workbook()
@@ -640,7 +666,7 @@ class Template():
         bytes.extend(Template.MESSAGE_END)
         return bytes
 
-template = Template(sys.argv[1])
+template = Template.from_syx_file(sys.argv[1])
 # template.print_all(only_unknown=True)
 # template.print_fields('unknown3')
 # template.print_distinct('unknown3')
@@ -651,3 +677,5 @@ template.print_controls()
 template.to_spreadsheet('test.xlsx')
 
 template2 = Template.from_spreadsheet('test.xlsx')
+
+print(len(template), len(template2), template==template2)
