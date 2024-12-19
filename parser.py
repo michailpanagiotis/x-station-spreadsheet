@@ -161,9 +161,6 @@ class RawBytes():
     def _pop_from(cls, other_bytes, name="", *args, **kwargs):
         num_bytes = cls.NUM_BYTES
 
-        if not num_bytes:
-            raise Exception('num_bytes is required')
-
         instance = cls(other_bytes[:num_bytes], name, *args, **kwargs)
 
         if isinstance(other_bytes, bytearray):
