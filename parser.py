@@ -157,11 +157,19 @@ indices = [
 ]
 
 class RawBytes():
+    DEFAULTS = {
+        "name": None,
+        "ms_name": None,
+        "ls_name": None,
+        "aliases": (),
+        "valid_values": (),
+    }
+
     @classmethod
-    def _pop_from(cls, other_bytes, name="", *args, **kwargs):
+    def _pop_from(cls, other_bytes, *args, **kwargs):
         num_bytes = cls.NUM_BYTES
 
-        instance = cls(other_bytes[:num_bytes], name, *args, **kwargs)
+        instance = cls(other_bytes[:num_bytes], *args, **kwargs)
 
         if isinstance(other_bytes, bytearray):
             for _ in range(len(instance)):
@@ -169,23 +177,25 @@ class RawBytes():
 
         return instance
 
-    def __init__(self, bytes, name, valid_values=(), hidden=False, aliases=(), **kwargs):
+    def __init__(self, bytes, name=None, *args, **kwargs):
         if not isinstance(bytes, bytearray):
             raise Exception('expecting a bytearray')
-
-        self.name = name
+        if len(bytes) != type(self).NUM_BYTES:
+            raise Exception('bad number of bytes')
         self.bytes = bytearray(bytes)
 
-        if len(self.bytes) != type(self).NUM_BYTES:
-            raise Exception('bad number of bytes')
+        self.name = name if name is not None else type(self).DEFAULTS['name']
+        for argname in ['ms_name', 'ls_name', 'valid_values', 'aliases']:
+            setattr(self, argname, kwargs[argname] if argname in kwargs else type(self).DEFAULTS[argname])
 
-        if len(valid_values) > 0:
+        if self.ms_name and self.ls_name:
+            self.name = '%s|%s' % (self.ms_name, self.ls_name)
+
+        if len(self.valid_values) > 0:
             for byte in bytes:
-               if byte not in valid_values:
+               if byte not in self.valid_values:
                     raise Exception('unsupported option %s' % byte)
 
-        self.hidden = hidden
-        self.aliases = aliases
 
     def __str__(self):
         return ''.join([hex(x) for x in self.bytes])
@@ -216,37 +226,58 @@ class ZeroPadding(RawBytes):
     def __str__(self):
         return str(len(self))
 
-Sysex = type("Sysex", (RawBytes,), { "NUM_BYTES": 18 })
-ControlName = type("ControlName", (StringValue,), { "NUM_BYTES": 16 })
-TemplateName = type("TemplateName", (StringValue,), { "NUM_BYTES": 30 })
-Pad1 = type("Pad1", (ZeroPadding,), { "NUM_BYTES": 1 })
-Pad2 = type("Pad1", (ZeroPadding,), { "NUM_BYTES": 2 })
-Pad3 = type("Pad1", (ZeroPadding,), { "NUM_BYTES": 3 })
-Pad4 = type("Pad4", (ZeroPadding,), { "NUM_BYTES": 4 })
-Pad5 = type("Pad5", (ZeroPadding,), { "NUM_BYTES": 5 })
-Pad6 = type("Pad5", (ZeroPadding,), { "NUM_BYTES": 6 })
-Pad7 = type("Pad5", (ZeroPadding,), { "NUM_BYTES": 7 })
-Pad8 = type("Pad5", (ZeroPadding,), { "NUM_BYTES": 8 })
-Pad170 = type("Pad5", (ZeroPadding,), { "NUM_BYTES": 170 })
-
 class BitMap(SingleByte):
-    def __init__(self, bytes, name, *args, **kwargs):
-        self._ms_name = kwargs.pop('ms_name')
-        self._ls_name = kwargs.pop('ls_name')
-        super().__init__(bytes, '%s|%s' % (self._ms_name, self._ls_name), *args, **kwargs)
-
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
-        return '<%s:%s|%s:%s>' % (self._ms_name, formatted[:4], self._ls_name, formatted[4:])
+        return '<%s:%s|%s:%s>' % (self.ms_name, formatted[:4], self.ls_name, formatted[4:])
 
     def __str__(self):
         return hex(self.bytes[0])
+
+def define_control(base_cls, num_bytes=None, **defaults):
+    return type("", (base_cls,), {
+        "NUM_BYTES": num_bytes if num_bytes is not None else base_cls.NUM_BYTES,
+        "DEFAULTS": {**base_cls.DEFAULTS, **defaults},
+    })
+
+Sysex = define_control(RawBytes, num_bytes=18, name="Sysex")
+ControlName = define_control(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
+TemplateName = define_control(StringValue, num_bytes=30)
+Pad1 = define_control(StringValue, num_bytes=1, name="Zeros")
+Pad2 = define_control(StringValue, num_bytes=2, name="Zeros")
+Pad3 = define_control(StringValue, num_bytes=3, name="Zeros")
+Pad4 = define_control(StringValue, num_bytes=4, name="Zeros")
+Pad5 = define_control(StringValue, num_bytes=5, name="Zeros")
+Pad6 = define_control(StringValue, num_bytes=6, name="Zeros")
+Pad7 = define_control(StringValue, num_bytes=7, name="Zeros")
+Pad8 = define_control(StringValue, num_bytes=8, name="Zeros")
+Pad170 = define_control(StringValue, num_bytes=170, name="Zeros")
 
 class SingleControl(dict):
     @classmethod
     def from_spreadsheet(self, row):
         values = [c.value for c in row]
         print('LEN', len(values))
+
+    CONTROL_TYPES = [
+        ControlName,
+        define_control(NumericValue, name="Type", aliases=['Control Type']),
+        define_control(NumericValue, name="Low", aliases=['Template', 'Velocity', 'MMC Command']),
+        define_control(NumericValue, name="High"),
+        define_control(BitMap, ms_name='Ports', ls_name='Button'),
+        define_control(NumericValue, name='Pot', aliases=['Pot / Slider Control Type']),
+        define_control(NumericValue, name='Display', aliases=['Display type']),
+        define_control(NumericValue, name='MSBank', aliases=['NRPN MSBank Num']),
+        define_control(NumericValue, name='CC', aliases=['Note']),
+        define_control(NumericValue, name='Ch', aliases=['Channel', 'Device id']),
+        define_control(NumericValue, name='Template', aliases=['Template', 'Velocity', 'MMC Command']),
+        define_control(NumericValue, name='N/A 1'),
+        define_control(NumericValue, name='N/A 2'),
+        define_control(NumericValue, name='N/A 3'),
+        Sysex,
+        define_control(NumericValue, name='Step'),
+        Pad4,
+    ]
 
     @classmethod
     def from_bytes(cls, idx, cmd, byte_index=None):
@@ -256,24 +287,7 @@ class SingleControl(dict):
 
             cmd = bytearray(cmd)
 
-        fields = []
-        fields.append(ControlName._pop_from(cmd, 'Name', aliases=['Control name']))
-        fields.append(NumericValue._pop_from(cmd, 'Type', aliases=['Control Type']))
-        fields.append(NumericValue._pop_from(cmd, 'Low', aliases=['Template', 'Velocity', 'MMC Command']))
-        fields.append(NumericValue._pop_from(cmd, 'High'))
-        fields.append(BitMap._pop_from(cmd, ms_name='Ports', ls_name='Button'))
-        fields.append(NumericValue._pop_from(cmd, 'Pot', aliases=['Pot / Slider Control Type']))
-        fields.append(NumericValue._pop_from(cmd, 'Display', aliases=['Display type']))
-        fields.append(NumericValue._pop_from(cmd, 'MSBank', aliases=['NRPN MSBank Num']))
-        fields.append(NumericValue._pop_from(cmd, 'CC', aliases=['Note']))
-        fields.append(NumericValue._pop_from(cmd, 'Ch', aliases=['Channel', 'Device id']))
-        fields.append(NumericValue._pop_from(cmd, 'Template', aliases=['Template', 'Velocity', 'MMC Command']))
-        fields.append(NumericValue._pop_from(cmd, 'N/A 1'))
-        fields.append(NumericValue._pop_from(cmd, 'N/A 2'))
-        fields.append(NumericValue._pop_from(cmd, 'N/A 3'))
-        fields.append(Sysex._pop_from(cmd, 'Sysex', hidden=True))
-        fields.append(NumericValue._pop_from(cmd, 'Step'))
-        fields.append(Pad4._pop_from(cmd, 'Zeros'))
+        fields = [ct._pop_from(cmd) for ct in cls.CONTROL_TYPES]
 
         if len(cmd) != 0:
             raise Exception('non parsed fields')
@@ -344,109 +358,109 @@ class Template():
         fields = []
         fields.append(SelectValue._pop_from(self.full_header, 'N/A 1', valid_values=[8, 17, 19, 24, 25]))
         fields.append(SelectValue._pop_from(self.full_header, 'N/A 2', valid_values=[1, 2, 3, 10]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(NumericValue._pop_from(self.full_header, 'N/A 3'))
         fields.append(TemplateName._pop_from(self.full_header, 'Name'))
         fields.append(SelectValue._pop_from(self.full_header, 'Channel', valid_values=[0, 16]))
         fields.append(SelectValue._pop_from(self.full_header, 'Midi port | Keyb MIDI Chan', valid_values=[0, 16, 48, 53, 54, 112]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Velocity curve', valid_values=[0, 1, 2, 3]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 2', valid_values=[4, 5]))
         fields.append(SelectValue._pop_from(self.full_header, 'Aftertouch | Auto Snapshot | Not Synth', valid_values=[0, 2, 3, 4, 5, 6, 7]))
         fields.append(NumericValue._pop_from(self.full_header, 'Override MIDI Ch'))
         fields.append(SelectValue._pop_from(self.full_header, 'Touchpad X Type', valid_values=[0, 1, 2]))
         fields.append(SelectValue._pop_from(self.full_header, 'Touchpad Y Type', valid_values=[0, 1, 2]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 6', valid_values=[48, 64, 79]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 7', valid_values=[0, 64]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 8', valid_values=[64, 78]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 9', valid_values=[64, 127]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 10', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 11', valid_values=[127]))
-        fields.append(Pad3._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad3._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 12', valid_values=[0,1]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 13', valid_values=[0,49]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 14', valid_values=[64,68]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 15', valid_values=[43,64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 16', valid_values=[127]))
-        fields.append(Pad6._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad6._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 17', valid_values=[0,18]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 18', valid_values=[3,5]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[90]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0,64]))
-        fields.append(Pad7._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad7._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0,1]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[20]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad5._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad5._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 32]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad3._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad3._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[100]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
-        fields.append(Pad3._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad3._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[52, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64, 78]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64, 72]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad6._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad6._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad4._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad4._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[127]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64, 78]))
-        fields.append(Pad4._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad4._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[3, 4]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[90]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad8._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad8._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[20]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64, 74]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[6, 44, 64]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0,32]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[96, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 36]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[100]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64, 65]))
-        fields.append(Pad2._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad2._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64, 98]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64, 74]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad6._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad6._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
-        fields.append(Pad3._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad3._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 1]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 1]))
         fields.append(SelectValue._pop_from(self.full_header, 'Midi port', valid_values=[0, 112]))
@@ -455,22 +469,22 @@ class Template():
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 60, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 7]))
-        fields.append(Pad4._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad4._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Midi port', valid_values=[0, 112]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 2]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 69]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 72, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 7]))
-        fields.append(Pad5._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad5._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 2]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 7]))
-        fields.append(Pad5._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad5._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 2]))
-        fields.append(Pad1._pop_from(self.full_header, 'Zeros'))
+        fields.append(Pad1._pop_from(self.full_header))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 127]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 64]))
         fields.append(SelectValue._pop_from(self.full_header, 'Select 19', valid_values=[0, 7]))
@@ -542,10 +556,10 @@ class Template():
     def from_spreadsheet(cls, filename):
         wb = load_workbook(filename=filename)
         ws = wb['Controls']
-        for row in ws.rows:
-            control = SingleControl.from_spreadsheet(row)
-            for cell in row:
-                print(cell.column)
+        # for row in ws.rows:
+        #     control = SingleControl.from_spreadsheet(row)
+        #     for cell in row:
+        #         print(cell.column)
 
     def to_spreadsheet(self, filename):
         wb = Workbook()
