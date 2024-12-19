@@ -177,12 +177,19 @@ class RawBytes():
 
         return instance
 
-    def __init__(self, bytes, name=None, *args, **kwargs):
-        if not isinstance(bytes, bytearray):
-            raise Exception('expecting a bytearray')
-        if len(bytes) != type(self).NUM_BYTES:
-            raise Exception('bad number of bytes')
-        self.bytes = bytearray(bytes)
+    @classmethod
+    def parse_string(cls, string):
+        raise Exception('not implemented for %s' % cls.__name__)
+
+    def __init__(self, value, name=None, *args, **kwargs):
+        if isinstance(value, bytearray):
+            if len(value) != type(self).NUM_BYTES:
+                raise Exception('bad number of bytes')
+            self.bytes = bytearray(value)
+        else:
+            self.bytes = type(self).parse_string(value)
+            if not isinstance(self.bytes, bytearray):
+                raise Exception('parsing should return a bytearray but got %s %s' % (self.bytes, type(self.bytes)))
 
         self.name = name if name is not None else type(self).DEFAULTS['name']
         for argname in ['ms_name', 'ls_name', 'valid_values', 'aliases']:
@@ -192,7 +199,7 @@ class RawBytes():
             self.name = '%s|%s' % (self.ms_name, self.ls_name)
 
         if len(self.valid_values) > 0:
-            for byte in bytes:
+            for byte in self.bytes:
                if byte not in self.valid_values:
                     raise Exception('unsupported option %s' % byte)
 
@@ -206,9 +213,22 @@ class RawBytes():
 class SingleByte(RawBytes):
     NUM_BYTES = 1
 
+    @classmethod
+    def parse_string(cls, string):
+        return bytearray([int(string)])
+
 class NumericValue(SingleByte):
     def __str__(self):
         return str(self.bytes[0])
+
+class NumericArray(RawBytes):
+    @classmethod
+    def parse_string(cls, string):
+        return bytearray(bytes.fromhex(string))
+
+    def __str__(self):
+        return self.bytes.hex()
+
 
 class SelectValue(NumericValue):
     def __init__(self, *args, **kwargs):
@@ -217,10 +237,18 @@ class SelectValue(NumericValue):
         super().__init__(*args, **kwargs)
 
 class StringValue(RawBytes):
+    @classmethod
+    def parse_string(cls, string):
+        return bytearray(string.encode('ascii').ljust(cls.NUM_BYTES, b' '))
+
     def __str__(self):
         return ''.join([chr(x) for x in self.bytes if chr(x) in string.printable]).strip()
 
 class ZeroPadding(RawBytes):
+    @classmethod
+    def parse_string(cls, string):
+        return bytearray(b'\x00') * cls.NUM_BYTES
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, valid_values=(0,))
 
@@ -228,6 +256,10 @@ class ZeroPadding(RawBytes):
         return str(len(self))
 
 class BitMap(SingleByte):
+    @classmethod
+    def parse_string(cls, string):
+        return bytearray([int(string, 16)])
+
     def __repr__(self):
         formatted = "{:08b}".format(self.bytes[0])
         return '<%s:%s|%s:%s>' % (self.ms_name, formatted[:4], self.ls_name, formatted[4:])
@@ -236,30 +268,26 @@ class BitMap(SingleByte):
         return hex(self.bytes[0])
 
 def define_field(base_cls, num_bytes=None, **defaults):
-    return type("", (base_cls,), {
+    name = defaults["name"] if "name" in defaults else ""
+    return type(name, (base_cls,), {
         "NUM_BYTES": num_bytes if num_bytes is not None else base_cls.NUM_BYTES,
         "DEFAULTS": {**base_cls.DEFAULTS, **defaults},
     })
 
-Sysex = define_field(RawBytes, num_bytes=18, name="Sysex")
+Sysex = define_field(NumericArray, num_bytes=18, name="Sysex")
 ControlName = define_field(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
 TemplateName = define_field(StringValue, num_bytes=30)
-Pad1 = define_field(StringValue, num_bytes=1, name="Zeros")
-Pad2 = define_field(StringValue, num_bytes=2, name="Zeros")
-Pad3 = define_field(StringValue, num_bytes=3, name="Zeros")
-Pad4 = define_field(StringValue, num_bytes=4, name="Zeros")
-Pad5 = define_field(StringValue, num_bytes=5, name="Zeros")
-Pad6 = define_field(StringValue, num_bytes=6, name="Zeros")
-Pad7 = define_field(StringValue, num_bytes=7, name="Zeros")
-Pad8 = define_field(StringValue, num_bytes=8, name="Zeros")
-Pad170 = define_field(StringValue, num_bytes=170, name="Zeros")
+Pad1 = define_field(ZeroPadding, num_bytes=1, name="Zeros")
+Pad2 = define_field(ZeroPadding, num_bytes=2, name="Zeros")
+Pad3 = define_field(ZeroPadding, num_bytes=3, name="Zeros")
+Pad4 = define_field(ZeroPadding, num_bytes=4, name="Zeros")
+Pad5 = define_field(ZeroPadding, num_bytes=5, name="Zeros")
+Pad6 = define_field(ZeroPadding, num_bytes=6, name="Zeros")
+Pad7 = define_field(ZeroPadding, num_bytes=7, name="Zeros")
+Pad8 = define_field(ZeroPadding, num_bytes=8, name="Zeros")
+Pad170 = define_field(ZeroPadding, num_bytes=170, name="Zeros")
 
 class SingleControl(dict):
-    @classmethod
-    def from_spreadsheet(self, row):
-        values = [c.value for c in row]
-        print('LEN', len(values))
-
     FIELD_TYPES = [
         ControlName,
         define_field(NumericValue, name="Type", aliases=['Control Type']),
@@ -279,6 +307,12 @@ class SingleControl(dict):
         define_field(NumericValue, name='Step'),
         Pad4,
     ]
+
+    @classmethod
+    def from_spreadsheet(cls, idx, row):
+        (legend, *values) = (c.value for c in row)
+        fields = [ct(values[idx]) for idx, ct in enumerate(cls.FIELD_TYPES)]
+        return cls(idx, fields)
 
     @classmethod
     def from_bytes(cls, idx, cmd, byte_index=None):
@@ -320,7 +354,8 @@ class SingleControl(dict):
     def write_to_sheet(self, ws, row_number):
         ws.cell(row=row_number, column=1, value=self.legend.strip())
         for idx, field in enumerate(self.fields):
-            ws.cell(row=row_number, column=idx + 2, value=str(field))
+            value = str(field)
+            ws.cell(row=row_number, column=idx + 2, value=value)
 
     @property
     def bytes(self):
@@ -558,10 +593,11 @@ class Template():
     def from_spreadsheet(cls, filename):
         wb = load_workbook(filename=filename)
         ws = wb['Controls']
-        # for row in ws.rows:
-        #     control = SingleControl.from_spreadsheet(row)
-        #     for cell in row:
-        #         print(cell.column)
+        for idx, row in enumerate(ws.rows):
+            if idx > 0:
+                control = SingleControl.from_spreadsheet(idx, row)
+            # for cell in row:
+            #     print(cell.column)
 
     def to_spreadsheet(self, filename):
         wb = Workbook()
