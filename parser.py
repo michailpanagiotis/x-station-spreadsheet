@@ -280,7 +280,8 @@ def define_field(base_cls, num_bytes=None, **defaults):
 
 Sysex = define_field(NumericArray, num_bytes=18, name="Sysex")
 ControlName = define_field(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
-TemplateName = define_field(StringValue, num_bytes=30)
+TemplateName = define_field(StringValue, num_bytes=16)
+ManufacturerName = define_field(StringValue, num_bytes=13)
 Pad1 = define_field(ZeroPadding, num_bytes=1, name="Zeros")
 Pad2 = define_field(ZeroPadding, num_bytes=2, name="Zeros")
 Pad3 = define_field(ZeroPadding, num_bytes=3, name="Zeros")
@@ -396,6 +397,8 @@ class Template():
         Pad1,
         define_field(NumericValue, name='N/A 3'),
         define_field(TemplateName, name='Name'),
+        define_field(NumericValue, name='N/A 4'),
+        define_field(ManufacturerName, name='Manufacturer'),
         define_field(SelectValue, name='Channel', valid_values=[0, 16]),
         define_field(SelectValue, name='Midi port | Keyb MIDI Chan', valid_values=[0, 16, 48, 53, 54, 112]),
         Pad2,
@@ -568,7 +571,7 @@ class Template():
     def from_spreadsheet(cls, filename):
         wb = load_workbook(filename=filename)
         ws = wb['Template configuration']
-        header_fields = [cls.FIELD_TYPES[idx](row[1].value) for idx, row in enumerate(ws.rows)]
+        header_fields = [cls.FIELD_TYPES[idx](row[1].value if row[1].value is not None else "") for idx, row in enumerate(ws.rows)]
 
         ws = wb['Controls']
         controls = [SingleControl.from_spreadsheet(idx, row) for idx, row in enumerate(ws.rows) if idx > 0]
@@ -666,6 +669,12 @@ class Template():
         bytes.extend(Template.MESSAGE_END)
         return bytes
 
+    def __getitem__(self, key):
+        field = next((x for x in self.header_fields if x.name == key), None)
+        if field is None:
+            raise KeyError
+        return field
+
 template = Template.from_syx_file(sys.argv[1])
 # template.print_all(only_unknown=True)
 # template.print_fields('unknown3')
@@ -677,5 +686,4 @@ template.print_controls()
 template.to_spreadsheet('test.xlsx')
 
 template2 = Template.from_spreadsheet('test.xlsx')
-
 print(len(template), len(template2), template==template2)
