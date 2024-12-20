@@ -226,13 +226,24 @@ class SingleControl():
         return indices[self.index]['section']
 
     @property
+    def group(self):
+        selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
+        group = '%s%s' % (indices[self.index]['section'], selector)
+        return group
+
+    @property
+    def label(self):
+        if 'selector' not in indices[self.index]:
+            return indices[self.index]['legend']
+        return '%s (%s)' % (indices[self.index]['legend'], indices[self.index]['selector'])
+
+    @property
     def physical(self):
         return indices[self.index].get('physical', None)
 
     @property
     def legend(self):
-        selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
-        legend = '%s%s>%s' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
+        legend = '%s>%s' % (self.group, indices[self.index]['legend'])
         return legend
 
     def __getitem__(self, key):
@@ -286,11 +297,12 @@ class SingleControl():
         id = '%s. %s' % (self.index, self.legend)
         control = {
           "id": id,
-          "name": id,
+          "name": self.label,
+          "groupId": self.section,
           "source": {
             **REALEARN_CONTROL_SOURCE_COMMON,
-            "channel": str(self['Ch']),
-            "number": str(self['CC']),
+            "channel": int(str(self['Ch'])),
+            "number": int(str(self['CC'])),
             "character": 1 if self.physical == 'Button' else 0,
           },
           "mode": {
@@ -614,6 +626,7 @@ class Template():
 
     def to_json(self, filename):
         id = self.name
+        groups = {c.section for c in self.controls if c.section != ''}
         main = {
           "kind": "Instance",
           "version": "2.16.14",
@@ -626,6 +639,7 @@ class Template():
               "livesOnUpperFloor": False,
               "controlDeviceId": "0",
               "defaultGroup": {},
+              "groups": [{"id": s, "name": s} for s in groups],
               "defaultControllerGroup": {},
               "mappings": [c.to_realearn_dict() for c in self.controls if c.physical is not None],
               "instanceFx": {
@@ -635,7 +649,8 @@ class Template():
             "additionalUnits": []
           }
         }
-        print(json.dumps(main, indent=2))
+        with open(filename, "w") as f:
+            f.write(json.dumps(main, indent=2))
 
 parser = argparse.ArgumentParser(
     prog='x-station-sheet',
@@ -663,7 +678,7 @@ elif args.command == 'syx':
 elif args.command == 'json':
     if path.suffix != '.xlsx':
         raise Exception('expecting a \'*.xlsx\' file as input')
-    output = path.with_suffix('.syx')
+    output = path.with_suffix('.json')
     template = Template.from_spreadsheet(path)
     template.to_json(output)
 else:
