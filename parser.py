@@ -1,160 +1,41 @@
 #!/usr/bin/env python3
+import argparse
+import json
 import string
 import sys
 from openpyxl import Workbook, load_workbook
+from pathlib import Path
 
-indices = [
-    { 'section': 'OSCS - MIXER', 'legend': 'PORTAMENTO' },
-    { 'section': 'OSCS - MIXER', 'legend': 'UNISON' },
-    { 'section': 'OSCS - MIXER', 'legend': 'WAVEFORM', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SEMITONE', 'selector': 'Osc 1', },
-    { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 1' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SYNC', 'selector': 'Osc 1' },
-    { 'section': 'OSCS - MIXER', 'legend': 'WAVEFORM', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SEMITONE', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 2' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SYNC', 'selector': 'Osc 2' },
-    { 'section': 'OSCS - MIXER', 'legend': 'WAVEFORM', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SEMITONE', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Osc 3' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SYNC', 'selector': 'Osc 3' },
-    { 'section': 'OSCS - MIXER', 'legend': 'WAVEFORM', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SEMITONE', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'DETUNE', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LEVEL', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'PWM', 'selector': 'Noise' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'OSCS - MIXER', 'legend': 'OCTAVE', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'ENV DEPTH', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'LFO DEPTH', 'selector': 'Noise' },
-    { 'section': 'OSCS - MIXER', 'legend': 'SYNC', 'selector': 'Noise' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'FILTERS', 'legend': 'FREQUENCY', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'RESONANCE', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'KEY TRACK', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'ENV DEPTH', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'LFO DEPTH', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'OVERDRIVE', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'SLOPE', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'TYPE', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'HPF ON', 'selector': '1' },
-    { 'section': 'FILTERS', 'legend': 'FREQUENCY', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'RESONANCE', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'KEY TRACK', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'ENV DEPTH', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'LFO DEPTH', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'OVERDRIVE', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'SLOPE', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'TYPE', 'selector': '2' },
-    { 'section': 'FILTERS', 'legend': 'HPF ON', 'selector': '2' },
-    { 'section': 'LFOS', 'legend': 'SPEED', 'selector': '1' },
-    { 'section': 'LFOS', 'legend': 'DELAY/AMOUNT', 'selector': '1' },
-    { 'section': 'LFOS', 'legend': 'WAVEFORM', 'selector': '1' },
-    { 'section': 'LFOS', 'legend': 'DEST', 'selector': '1' },
-    { 'section': 'LFOS', 'legend': 'SPEED', 'selector': '2' },
-    { 'section': 'LFOS', 'legend': 'DELAY/AMOUNT', 'selector': '2' },
-    { 'section': 'LFOS', 'legend': 'WAVEFORM', 'selector': '2' },
-    { 'section': 'LFOS', 'legend': 'DEST', 'selector': '2' },
-    { 'section': 'LFOS', 'legend': 'SPEED', 'selector': '3' },
-    { 'section': 'LFOS', 'legend': 'DELAY/AMOUNT', 'selector': '3' },
-    { 'section': 'LFOS', 'legend': 'WAVEFORM', 'selector': '3' },
-    { 'section': 'LFOS', 'legend': 'DEST', 'selector': '3' },
-    { 'section': 'AMP ENV', 'legend': 'ATTACK' },
-    { 'section': 'AMP ENV', 'legend': 'DECAY' },
-    { 'section': 'AMP ENV', 'legend': 'SUSTAIN' },
-    { 'section': 'AMP ENV', 'legend': 'RELEASE' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'ATTACK' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'DECAY' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'SUSTAIN' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'RELEASE' },
-    { 'section': 'AMP ENV', 'legend': 'MONO / POLY', 'selector': 'Mod' },
-    { 'section': 'AMP ENV', 'legend': 'GATE', 'selector': 'Mod' },
-    { 'section': 'AMP ENV', 'legend': 'HOLD', 'selector': 'Mod' },
-    { 'section': 'AMP ENV', 'legend': 'ON / OFF', 'selector': 'Mod' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'DEST', 'selector': 'Mod' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'GATE', 'selector': 'Mod' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F1', 'selector': 'Mod' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F2', 'selector': 'Mod' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F3', 'selector': 'Mod' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'AMP ENV', 'legend': 'MONO / POLY', 'selector': 'Env 3' },
-    { 'section': 'AMP ENV', 'legend': 'GATE', 'selector': 'Env 3' },
-    { 'section': 'AMP ENV', 'legend': 'HOLD', 'selector': 'Env 3' },
-    { 'section': 'AMP ENV', 'legend': 'ON / OFF', 'selector': 'Env 3' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'DEST', 'selector': 'Env 3' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'GATE', 'selector': 'Env 3' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F1', 'selector': 'Env 3' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F2', 'selector': 'Env 3' },
-    { 'section': 'MOD ENV / ENV 3', 'legend': 'F3', 'selector': 'Env 3' },
-    { 'section': 'VELOCITY', 'legend': 'VELOCITY' },
-    { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Amp' },
-    { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Amp' },
-    { 'section': '', 'legend': '???', 'selector': 'Amp' },
-    { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Mod' },
-    { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Mod' },
-    { 'section': '', 'legend': '???', 'selector': 'Mod' },
-    { 'section': 'VELOCITY', 'legend': 'TRIGGER', 'selector': 'Env 3' },
-    { 'section': 'VELOCITY', 'legend': 'REPEAT', 'selector': 'Env 3' },
-    { 'section': 'ARP', 'legend': 'TEMPO' },
-    { 'section': 'ARP', 'legend': 'ON' },
-    { 'section': 'ARP', 'legend': 'LATCH' },
-    { 'section': 'EFFECTS', 'legend': 'LEVEL' },
-    { 'section': 'EFFECTS', 'legend': 'SELECT' },
-    { 'section': 'EFFECTS', 'legend': 'CONTROL' },
-    { 'section': 'EXTERNAL', 'legend': 'SUSTAIN' },
-    { 'section': 'EXTERNAL', 'legend': 'EXPRESSION' },
-    { 'section': 'PITCH/MOD', 'legend': 'PITCH BEND' },
-    { 'section': 'PITCH/MOD', 'legend': 'MOD WHEEL' },
-    { 'section': 'TOUCHPAD', 'legend': 'X' },
-    { 'section': 'TOUCHPAD', 'legend': 'Y' },
-    { 'section': '', 'legend': '???' },
-    { 'section': '', 'legend': '???' },
-    { 'section': 'TRANSPORT', 'legend': 'STOP' },
-    { 'section': 'TRANSPORT', 'legend': 'PLAY' },
-    { 'section': 'TRANSPORT', 'legend': 'REC' },
-    { 'section': 'TRANSPORT', 'legend': 'FF' },
-    { 'section': 'TRANSPORT', 'legend': 'RW' },
-    { 'section': '', 'legend': '???' },
-]
+with open('x-station-indices.json', 'r') as f:
+    indices = json.loads(f.read())
+
+REALEARN_TARGET_DUMMY = {
+    "type": 53,
+    "fxAnchor": "id",
+    "useSelectionGanging": False,
+    "useTrackGrouping": False,
+    "seekBehavior": "Immediate",
+    "useProject": False,
+    "moveView": False,
+    "seekPlay": False,
+    "oscArgIndex": 0,
+    "mouseAction": { "kind": "MoveTo", "axis": "X" },
+    "takeMappingSnapshot": { "kind": "LastLoaded" }
+}
+
+REALEARN_BUTTON_DESIGN = {
+    "background": { "kind": "Color" },
+    "foreground": { "kind": "None" },
+    "static_text": ""
+}
+
+REALEARN_CONTROL_SOURCE_COMMON = {
+    "isRegistered": False,
+    "is14Bit": False,
+    "oscArgIndex": 0,
+    "buttonIndex": 0,
+    "buttonDesign": REALEARN_BUTTON_DESIGN,
+}
 
 class RawBytes():
     DEFAULTS = {
@@ -211,6 +92,16 @@ class RawBytes():
 
     def __len__(self):
         return len(self.bytes)
+
+    def __eq__(self, other):
+        if len(self) != len(other):
+            return False
+
+        for idx, byte in enumerate(self.bytes):
+            if byte != other.bytes[idx]:
+                return False
+        return True
+
 
 class SingleByte(RawBytes):
     NUM_BYTES = 1
@@ -313,27 +204,6 @@ class SingleControl():
         Pad4,
     ]
 
-    @classmethod
-    def from_spreadsheet(cls, idx, row):
-        (legend, *values) = (c.value for c in row)
-        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(cls.FIELD_TYPES)]
-        return cls(idx, fields)
-
-    @classmethod
-    def from_bytes(cls, idx, cmd):
-        if isinstance(cmd, bytes):
-            if len(cmd) != 52:
-                raise Exception('bad length')
-
-            cmd = bytearray(cmd)
-
-        fields = [ct._pop_from(cmd) for ct in cls.FIELD_TYPES]
-
-        if len(cmd) != 0:
-            raise Exception('non parsed fields')
-
-        return cls(idx, fields)
-
     def __init__(self, idx, fields):
         name = next(x.bytes for x in fields if x.name == 'Name')
         self.index = idx
@@ -342,7 +212,7 @@ class SingleControl():
         self.fields = fields
 
     def __str__(self):
-        return '%s' % (' '.join([str(x) for x in self.fields if x.name != 'Name']))
+        return '%s' % (' '.join([str(x) for x in self.fields]))
 
     @property
     def bytes(self):
@@ -356,10 +226,14 @@ class SingleControl():
         return indices[self.index]['section']
 
     @property
+    def physical(self):
+        return indices[self.index].get('physical', None)
+
+    @property
     def legend(self):
         selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
-        legend = '%s%s>%s\t' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
-        return legend.rjust(30, ' ')
+        legend = '%s%s>%s' % (indices[self.index]['section'], selector, indices[self.index]['legend'])
+        return legend
 
     def __getitem__(self, key):
         field = next((x for x in self.fields if x.name == key), None)
@@ -379,13 +253,57 @@ class SingleControl():
     def csv(self):
         return '%s,%s' % (self.legend.strip(), ','.join([str(x) for x in self.fields]))
 
-    def write_to_sheet(self, ws, row_number):
+    @classmethod
+    def from_sysex(cls, idx, cmd):
+        if isinstance(cmd, bytes):
+            if len(cmd) != 52:
+                raise Exception('bad length')
+
+            cmd = bytearray(cmd)
+
+        fields = [ct._pop_from(cmd) for ct in cls.FIELD_TYPES]
+
+        if len(cmd) != 0:
+            raise Exception('non parsed fields')
+
+        return cls(idx, fields)
+
+    @classmethod
+    def from_spreadsheet(cls, idx, row):
+        (legend, *values) = (c.value for c in row)
+        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(cls.FIELD_TYPES)]
+        return cls(idx, fields)
+
+    def to_spreadsheet(self, ws, row_number):
         ws.cell(row=row_number, column=1, value=self.legend.strip())
         for idx, field in enumerate(self.fields):
             value = str(field)
             if value is None:
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 2, value=value)
+
+    def to_realearn_dict(self):
+        id = '%s. %s' % (self.index, self.legend)
+        control = {
+          "id": id,
+          "name": id,
+          "source": {
+            **REALEARN_CONTROL_SOURCE_COMMON,
+            "channel": str(self['Ch']),
+            "number": str(self['CC']),
+            "character": 1 if self.physical == 'Button' else 0,
+          },
+          "mode": {
+            "maxStepSize": 0.05,
+            "minStepFactor": 1,
+            "maxStepFactor": 5,
+            "takeoverMode": "pickup-tolerant"
+          },
+          "target": REALEARN_TARGET_DUMMY,
+          "feedbackIsEnabled": False,
+          "visibleInProjection": False
+        }
+        return control
 
 class Template():
     LINE_SIZE = 52
@@ -529,61 +447,25 @@ class Template():
         Pad170,
     ]
 
-    @classmethod
-    def from_syx_file(cls, filename):
-        with open(filename, "rb") as f:
-            file_contents = f.read()
-
-        if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
-            raise Exception('bad header')
-
-        if file_contents[-len(Template.MESSAGE_END):] != Template.MESSAGE_END:
-            raise Exception('bad footer')
-
-        body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
-        offset = 405 - len(Template.MESSAGE_START)
-        full_header = bytearray(body[:offset])
-        controls = body[len(full_header):]
-
-        if len(full_header) != 396:
-            raise Exception('bad header bytes length')
-
-        instance = cls(
-            header_fields=[
-                ct._pop_from(full_header)
-                for ct in cls.FIELD_TYPES
-            ],
-            controls = [
-                SingleControl.from_bytes(idx, controls[i:i + cls.LINE_SIZE])
-                for idx, i in enumerate(range(0, len(controls), cls.LINE_SIZE))
-            ],
-        )
-
-        bytes = instance.bytes
-
-        for idx, byte in enumerate(file_contents):
-            if byte != bytes[idx]:
-                raise Exception('bad serializing')
-
-        return instance
-
-    @classmethod
-    def from_spreadsheet(cls, filename):
-        wb = load_workbook(filename=filename)
-        ws = wb['Template configuration']
-        header_fields = [cls.FIELD_TYPES[idx](row[1].value if row[1].value is not None else "") for idx, row in enumerate(ws.rows)]
-
-        ws = wb['Controls']
-        controls = [SingleControl.from_spreadsheet(idx, row) for idx, row in enumerate(ws.rows) if idx > 0]
-        return cls(header_fields, controls)
-
     def __init__(self, header_fields, controls):
         self.header_fields = header_fields
         self.controls = controls
 
-    def write(self, file):
-        with open(file, "wb") as f:
-            f.write(self.bytes)
+    @property
+    def bytes(self):
+        bytes = bytearray(Template.MESSAGE_START)
+        for field in self.header_fields:
+            bytes.extend(field.bytes)
+        for control in self.controls:
+            bytes.extend(control.bytes)
+        bytes.extend(Template.MESSAGE_END)
+        return bytes
+
+    def __getitem__(self, key):
+        field = next((x for x in self.header_fields if x.name == key), None)
+        if field is None:
+            raise KeyError
+        return field
 
     def __str__(self):
        return '\n'.join([str(x) for x in self.controls])
@@ -607,6 +489,12 @@ class Template():
                 return False
         return True
 
+    @property
+    def name(self):
+        name = next(str(x) for x in self.header_fields if x.name == 'Name')
+        manufacturer = next(str(x) for x in self.header_fields if x.name == 'Manufacturer')
+        return ('%s %s' % (manufacturer.strip(), name.strip())).strip()
+
     def print_all(self, only_unknown=False):
         for control in self.controls:
             if only_unknown and control.section != '':
@@ -622,11 +510,88 @@ class Template():
         for line in self.controls:
             print('%s %s %s %s' % (line.legend, line['name'], line['CC|Note'], line[fieldName]))
 
+    @property
+    def unknowns(self):
+        return [x for x in self.controls if x.section == '']
+
+    def print_unknowns(self):
+        for control in self.unknowns:
+            print(control.index + 2, control.csv())
+
+    def diff_headers(self, other):
+        for idx, header in enumerate(self.header_fields):
+            other_header = other.header_fields[idx]
+            for byte_index, byte in enumerate(header.bytes):
+                if byte != other_header.bytes[byte_index]:
+                    print('-', idx + 1, header.name, header,'---->', other_header)
+                    break
+
+    def compare_unknowns(self, other):
+        other_unknowns = other.controls
+        for idx, control in enumerate(self.controls):
+            other_control = other_unknowns[idx]
+            for field_index, field in enumerate(control.fields):
+                if field.name not in ('Name', 'Ch', 'CC', 'Display', 'Type', 'Pot'): # 'Name', 'Low', 'High', 'Ch', 'MSBank', 'Sysex'):
+                    other_field = other_control.fields[field_index]
+                    if field != other_field:
+                        print(control.index + 2, control.legend, field.name, str(field), '---->', str(other_field))
+
     def print_controls(self):
-        headers = 'Legend,%s' % (','.join([field.name for field in self.controls[0].fields]))
-        print(headers)
         for control in self.controls:
             print(control.csv())
+
+    @classmethod
+    def from_sysex(cls, filename):
+        with open(filename, "rb") as f:
+            file_contents = f.read()
+
+        if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
+            raise Exception('bad header')
+
+        if file_contents[-len(Template.MESSAGE_END):] != Template.MESSAGE_END:
+            raise Exception('bad footer')
+
+        body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
+        offset = 405 - len(Template.MESSAGE_START)
+        full_header = bytearray(body[:offset])
+        controls = body[len(full_header):]
+
+        if len(full_header) != 396:
+            raise Exception('bad header bytes length')
+
+        instance = cls(
+            header_fields=[
+                ct._pop_from(full_header)
+                for ct in cls.FIELD_TYPES
+            ],
+            controls = [
+                SingleControl.from_sysex(idx, controls[i:i + cls.LINE_SIZE])
+                for idx, i in enumerate(range(0, len(controls), cls.LINE_SIZE))
+            ],
+        )
+
+        bytes = instance.bytes
+
+        for idx, byte in enumerate(file_contents):
+            if byte != bytes[idx]:
+                raise Exception('bad serializing')
+
+        return instance
+
+    def to_sysex(self, file):
+        with open(file, "wb") as f:
+            f.write(self.bytes)
+
+    @classmethod
+    def from_spreadsheet(cls, filename):
+        wb = load_workbook(filename=filename)
+        ws = wb['Template configuration']
+        header_fields = [cls.FIELD_TYPES[idx](row[1].value if row[1].value is not None else "") for idx, row in enumerate(ws.rows)]
+
+        ws = wb['Controls']
+        controls = [SingleControl.from_spreadsheet(idx - 1, row) for idx, row in enumerate(ws.rows) if idx > 0]
+        return cls(header_fields, controls)
+
 
     def to_spreadsheet(self, filename):
         wb = Workbook()
@@ -643,34 +608,63 @@ class Template():
         for idx, field in enumerate(self.controls[0].fields):
             ws.cell(row=1, column=idx + 2, value=field.name)
         for idx, control in enumerate(self.controls):
-            control.write_to_sheet(ws, idx + 2)
-
-        wb.create_sheet("Control Order")
-        ws = wb["Control Order"]
-
-        ws.cell(row=1, column=1, value='section')
-        ws.cell(row=1, column=2, value='legend')
-        ws.cell(row=1, column=3, value='selector')
-
-        for idx, field in enumerate(indices):
-            ws.cell(row=idx+2, column=1, value=field['section'])
-            ws.cell(row=idx+2, column=2, value=field['legend'])
-            ws.cell(row=idx+2, column=3, value=field['selector'] if 'selector' in field else '')
+            control.to_spreadsheet(ws, idx + 2)
 
         wb.save(filename)
 
-    @property
-    def bytes(self):
-        bytes = bytearray(Template.MESSAGE_START)
-        for field in self.header_fields:
-            bytes.extend(field.bytes)
-        for control in self.controls:
-            bytes.extend(control.bytes)
-        bytes.extend(Template.MESSAGE_END)
-        return bytes
+    def to_json(self, filename):
+        id = self.name
+        main = {
+          "kind": "Instance",
+          "version": "2.16.14",
+          "value": {
+            "mainUnit": {
+              "version": "2.16.14",
+              "id": id,
+              "name": "Main",
+              "stayActiveWhenProjectInBackground": "OnlyIfBackgroundProjectIsRunning",
+              "livesOnUpperFloor": False,
+              "controlDeviceId": "0",
+              "defaultGroup": {},
+              "defaultControllerGroup": {},
+              "mappings": [c.to_realearn_dict() for c in self.controls if c.physical is not None],
+              "instanceFx": {
+                "address": "Focused"
+              }
+            },
+            "additionalUnits": []
+          }
+        }
+        print(json.dumps(main, indent=2))
 
-    def __getitem__(self, key):
-        field = next((x for x in self.header_fields if x.name == key), None)
-        if field is None:
-            raise KeyError
-        return field
+parser = argparse.ArgumentParser(
+    prog='x-station-sheet',
+    description='Converts from Novation X-station Sysex to Excel files and back',
+)
+
+parser.add_argument('command', choices=['xlsx', 'syx', 'json'])
+parser.add_argument('filename')
+args = parser.parse_args()
+
+path = Path(args.filename).absolute()
+
+if args.command == 'xlsx':
+    if path.suffix != '.syx':
+        raise Exception('expecting a \'*.syx\' file as input')
+    output = path.with_suffix('.xlsx')
+    template = Template.from_sysex(path)
+    template.to_spreadsheet(output)
+elif args.command == 'syx':
+    if path.suffix != '.xlsx':
+        raise Exception('expecting a \'*.xlsx\' file as input')
+    output = path.with_suffix('.syx')
+    template = Template.from_spreadsheet(path)
+    template.to_sysex(output)
+elif args.command == 'json':
+    if path.suffix != '.xlsx':
+        raise Exception('expecting a \'*.xlsx\' file as input')
+    output = path.with_suffix('.syx')
+    template = Template.from_spreadsheet(path)
+    template.to_json(output)
+else:
+    raise Exception('unknown command')

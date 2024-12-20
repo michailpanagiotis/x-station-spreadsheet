@@ -7,19 +7,19 @@
   {
     "section": "OSCS - MIXER",
     "legend": "UNISON",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "WAVEFORM",
     "selector": "Osc 1",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "SEMITONE",
     "selector": "Osc 1",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
@@ -41,19 +41,17 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "OSCS - MIXER",
     "legend": "OCTAVE",
-    "selector": "Osc 1",
-    "physical": "Pot"
+    "selector": "Button",
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
@@ -71,19 +69,19 @@
     "section": "OSCS - MIXER",
     "legend": "SYNC",
     "selector": "Osc 1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "WAVEFORM",
     "selector": "Osc 2",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "SEMITONE",
     "selector": "Osc 2",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
@@ -105,19 +103,17 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "OSCS - MIXER",
     "legend": "OCTAVE",
     "selector": "Osc 2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
@@ -135,19 +131,19 @@
     "section": "OSCS - MIXER",
     "legend": "SYNC",
     "selector": "Osc 2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "WAVEFORM",
     "selector": "Osc 3",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "SEMITONE",
     "selector": "Osc 3",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
@@ -169,19 +165,17 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "OSCS - MIXER",
     "legend": "OCTAVE",
     "selector": "Osc 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
@@ -199,19 +193,19 @@
     "section": "OSCS - MIXER",
     "legend": "SYNC",
     "selector": "Osc 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "WAVEFORM",
     "selector": "Noise",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
     "legend": "SEMITONE",
     "selector": "Noise",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "OSCS - MIXER",
@@ -233,19 +227,17 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "OSCS - MIXER",
     "legend": "OCTAVE",
     "selector": "Noise",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "OSCS - MIXER",
@@ -263,62 +255,51 @@
     "section": "OSCS - MIXER",
     "legend": "SYNC",
     "selector": "Noise",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "FILTERS",
@@ -360,19 +341,19 @@
     "section": "FILTERS",
     "legend": "SLOPE",
     "selector": "1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
     "legend": "TYPE",
     "selector": "1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
     "legend": "HPF ON",
     "selector": "1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
@@ -414,19 +395,19 @@
     "section": "FILTERS",
     "legend": "SLOPE",
     "selector": "2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
     "legend": "TYPE",
     "selector": "2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
     "legend": "HPF ON",
     "selector": "2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
@@ -444,13 +425,13 @@
     "section": "LFOS",
     "legend": "WAVEFORM",
     "selector": "1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
     "legend": "DEST",
     "selector": "1",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
@@ -468,13 +449,13 @@
     "section": "LFOS",
     "legend": "WAVEFORM",
     "selector": "2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
     "legend": "DEST",
     "selector": "2",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
@@ -492,13 +473,13 @@
     "section": "LFOS",
     "legend": "WAVEFORM",
     "selector": "3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "LFOS",
     "legend": "DEST",
     "selector": "3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
@@ -544,149 +525,141 @@
     "section": "AMP ENV",
     "legend": "MONO / POLY",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "GATE",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "HOLD",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "ON / OFF",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "DEST",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "GATE",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F1",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F2",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F3",
     "selector": "Mod",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "AMP ENV",
     "legend": "MONO / POLY",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "GATE",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "HOLD",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "AMP ENV",
     "legend": "ON / OFF",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "DEST",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "GATE",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F1",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F2",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "MOD ENV / ENV 3",
     "legend": "F3",
     "selector": "Env 3",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "VELOCITY",
@@ -707,9 +680,7 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "selector": "Amp",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "VELOCITY",
@@ -725,9 +696,7 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "selector": "Mod",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "VELOCITY",
@@ -744,17 +713,17 @@
   {
     "section": "ARP",
     "legend": "TEMPO",
-    "physical": "Pot"
+    "physical": "Encoder"
   },
   {
     "section": "ARP",
     "legend": "ON",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "ARP",
     "legend": "LATCH",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "EFFECTS",
@@ -764,7 +733,7 @@
   {
     "section": "EFFECTS",
     "legend": "SELECT",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "EFFECTS",
@@ -803,42 +772,39 @@
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   },
   {
     "section": "TRANSPORT",
     "legend": "STOP",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "TRANSPORT",
     "legend": "PLAY",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "TRANSPORT",
     "legend": "REC",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "TRANSPORT",
     "legend": "FF",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "TRANSPORT",
     "legend": "RW",
-    "physical": "Pot"
+    "physical": "Button"
   },
   {
     "section": "",
-    "legend": "???",
-    "physical": "Pot"
+    "legend": ""
   }
 ]
