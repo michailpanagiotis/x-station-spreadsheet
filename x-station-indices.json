@@ -1,0 +1,844 @@
+[
+  {
+    "section": "OSCS - MIXER",
+    "legend": "PORTAMENTO",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "UNISON",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "WAVEFORM",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SEMITONE",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "DETUNE",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LEVEL",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "OCTAVE",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "ENV DEPTH",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LFO DEPTH",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SYNC",
+    "selector": "Osc 1",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "WAVEFORM",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SEMITONE",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "DETUNE",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LEVEL",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "OCTAVE",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "ENV DEPTH",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LFO DEPTH",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SYNC",
+    "selector": "Osc 2",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "WAVEFORM",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SEMITONE",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "DETUNE",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LEVEL",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "OCTAVE",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "ENV DEPTH",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LFO DEPTH",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SYNC",
+    "selector": "Osc 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "WAVEFORM",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SEMITONE",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "DETUNE",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LEVEL",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "OCTAVE",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "ENV DEPTH",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "LFO DEPTH",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "OSCS - MIXER",
+    "legend": "SYNC",
+    "selector": "Noise",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "FREQUENCY",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "RESONANCE",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "KEY TRACK",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "ENV DEPTH",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "LFO DEPTH",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "OVERDRIVE",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "SLOPE",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "TYPE",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "HPF ON",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "FREQUENCY",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "RESONANCE",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "KEY TRACK",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "ENV DEPTH",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "LFO DEPTH",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "OVERDRIVE",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "SLOPE",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "TYPE",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "FILTERS",
+    "legend": "HPF ON",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "SPEED",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DELAY/AMOUNT",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "WAVEFORM",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DEST",
+    "selector": "1",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "SPEED",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DELAY/AMOUNT",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "WAVEFORM",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DEST",
+    "selector": "2",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "SPEED",
+    "selector": "3",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DELAY/AMOUNT",
+    "selector": "3",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "WAVEFORM",
+    "selector": "3",
+    "physical": "Pot"
+  },
+  {
+    "section": "LFOS",
+    "legend": "DEST",
+    "selector": "3",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "ATTACK",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "DECAY",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "SUSTAIN",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "RELEASE",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "ATTACK",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "DECAY",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "SUSTAIN",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "RELEASE",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "MONO / POLY",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "GATE",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "HOLD",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "ON / OFF",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "DEST",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "GATE",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F1",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F2",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F3",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "MONO / POLY",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "GATE",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "HOLD",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "AMP ENV",
+    "legend": "ON / OFF",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "DEST",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "GATE",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F1",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F2",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "MOD ENV / ENV 3",
+    "legend": "F3",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "VELOCITY",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "TRIGGER",
+    "selector": "Amp",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "REPEAT",
+    "selector": "Amp",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "selector": "Amp",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "TRIGGER",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "REPEAT",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "selector": "Mod",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "TRIGGER",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "VELOCITY",
+    "legend": "REPEAT",
+    "selector": "Env 3",
+    "physical": "Pot"
+  },
+  {
+    "section": "ARP",
+    "legend": "TEMPO",
+    "physical": "Pot"
+  },
+  {
+    "section": "ARP",
+    "legend": "ON",
+    "physical": "Pot"
+  },
+  {
+    "section": "ARP",
+    "legend": "LATCH",
+    "physical": "Pot"
+  },
+  {
+    "section": "EFFECTS",
+    "legend": "LEVEL",
+    "physical": "Pot"
+  },
+  {
+    "section": "EFFECTS",
+    "legend": "SELECT",
+    "physical": "Pot"
+  },
+  {
+    "section": "EFFECTS",
+    "legend": "CONTROL",
+    "physical": "Pot"
+  },
+  {
+    "section": "EXTERNAL",
+    "legend": "SUSTAIN",
+    "physical": "Pot"
+  },
+  {
+    "section": "EXTERNAL",
+    "legend": "EXPRESSION",
+    "physical": "Pot"
+  },
+  {
+    "section": "PITCH/MOD",
+    "legend": "PITCH BEND",
+    "physical": "Pot"
+  },
+  {
+    "section": "PITCH/MOD",
+    "legend": "MOD WHEEL",
+    "physical": "Pot"
+  },
+  {
+    "section": "TOUCHPAD",
+    "legend": "X",
+    "physical": "Pot"
+  },
+  {
+    "section": "TOUCHPAD",
+    "legend": "Y",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  },
+  {
+    "section": "TRANSPORT",
+    "legend": "STOP",
+    "physical": "Pot"
+  },
+  {
+    "section": "TRANSPORT",
+    "legend": "PLAY",
+    "physical": "Pot"
+  },
+  {
+    "section": "TRANSPORT",
+    "legend": "REC",
+    "physical": "Pot"
+  },
+  {
+    "section": "TRANSPORT",
+    "legend": "FF",
+    "physical": "Pot"
+  },
+  {
+    "section": "TRANSPORT",
+    "legend": "RW",
+    "physical": "Pot"
+  },
+  {
+    "section": "",
+    "legend": "???",
+    "physical": "Pot"
+  }
+]
