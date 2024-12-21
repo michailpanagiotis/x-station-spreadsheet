@@ -23,7 +23,7 @@
       .target.useSelectionGanging # false
     )
     | .
-  ),
+  ) | group_by(.source.controlElementIndex) | map({ (.[0].source.controlElementIndex): { mappings: . } }) | add ,
   controllerMappings: .controllerMappings | map(
     .
     | del(
@@ -41,5 +41,5 @@
       .target.useSelectionGanging # false
     )
     | .
-  )
+  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): { controllerMappings: . } }) | add
 }
