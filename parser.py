@@ -37,6 +37,24 @@ REALEARN_CONTROL_SOURCE_COMMON = {
     "buttonDesign": REALEARN_BUTTON_DESIGN,
 }
 
+REALEARN_CONTROL_TARGET_COMMON = {
+    "category": "virtual",
+    "fxAnchor": "id",
+    "useSelectionGanging": False,
+    "useTrackGrouping": False,
+    "seekBehavior": "Immediate",
+    "learnable": False,
+    "mouseAction": {
+      "kind": "MoveTo",
+      "axis": "X"
+    },
+    "pollForFeedback": False,
+    "takeMappingSnapshot": {
+      "kind": "ById",
+      "id": ""
+    }
+}
+
 class RawBytes():
     DEFAULTS = {
         "name": None,
@@ -195,7 +213,7 @@ class SingleControl():
         define_field(NumericValue, name='MSBank', aliases=['NRPN MSBank Num']),
         define_field(NumericValue, name='CC', aliases=['Note']),
         define_field(NumericValue, name='Ch', aliases=['Channel', 'Device id']),
-        define_field(NumericValue, name='Template', aliases=['Template', 'Velocity', 'MMC Command']),
+        define_field(NumericValue, name='Default', aliases=['Template', 'Velocity', 'MMC Command']),
         define_field(NumericValue, name='N/A 1'),
         define_field(NumericValue, name='N/A 2'),
         define_field(NumericValue, name='N/A 3'),
@@ -301,9 +319,9 @@ class SingleControl():
           "groupId": self.section,
           "source": {
             **REALEARN_CONTROL_SOURCE_COMMON,
+            "character": 1 if self.physical == 'Button' else 0,
             "channel": int(str(self['Ch'])),
             "number": int(str(self['CC'])),
-            "character": 1 if self.physical == 'Button' else 0,
           },
           "mode": {
             "maxStepSize": 0.05,
@@ -311,7 +329,11 @@ class SingleControl():
             "maxStepFactor": 5,
             "takeoverMode": "pickup-tolerant"
           },
-          "target": REALEARN_TARGET_DUMMY,
+          "target": {
+                **REALEARN_CONTROL_TARGET_COMMON,
+                "controlElementType": "Button" if self.physical == 'Button' else None,
+                "controlElementIndex": self.label,
+          },
           "feedbackIsEnabled": False,
           "visibleInProjection": False
         }
@@ -639,9 +661,9 @@ class Template():
               "livesOnUpperFloor": False,
               "controlDeviceId": "0",
               "defaultGroup": {},
-              "groups": [{"id": s, "name": s} for s in groups],
+              "controllerGroups": [{"id": s, "name": s} for s in groups],
               "defaultControllerGroup": {},
-              "mappings": [c.to_realearn_dict() for c in self.controls if c.physical is not None],
+              "controllerMappings": [c.to_realearn_dict() for c in self.controls if c.physical is not None],
               "instanceFx": {
                 "address": "Focused"
               }
