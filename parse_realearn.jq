@@ -7,7 +7,7 @@
 | del(.parameters)
 | {
   mappings: .mappings | map(
-    .
+    select(.controlIsEnabled != false)
     | del(
       .source.category, # Virtual
 
@@ -41,10 +41,7 @@
       .target.useSelectionGanging # false
     )
     | .
-  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): { controllerMappings: . } }) | add
+  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): .[0] }) | add
 }
-| .controllerMappings | to_entries | map(. | select((.value.controllerMappings | length) > 0))
-#| map(.controllerMappings)
-#| select((.value.controllerMappings | length) > 1)
-# | select((.controllerMappings | length) > 0)
-# | .mappings * .controllerMappings | .zoom
+| .controllerMappings * .mappings
+| to_entries | map(. | select((.value.mappings | length) > 1))
