@@ -25,7 +25,7 @@
     | .
   ) | group_by(.source.controlElementIndex) | map({ (.[0].source.controlElementIndex): { mappings: . } }) | add ,
   controllerMappings: .controllerMappings | map(
-    .
+    select(.controlIsEnabled != false)
     | del(
       .source.buttonIndex, # 0
       .source.buttonDesign, # { "background": { "kind": "Color" }, "foreground": { "kind": "None" }, "static_text": "" }
@@ -43,3 +43,8 @@
     | .
   ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): { controllerMappings: . } }) | add
 }
+| .controllerMappings | to_entries | map(. | select((.value.controllerMappings | length) > 0))
+#| map(.controllerMappings)
+#| select((.value.controllerMappings | length) > 1)
+# | select((.controllerMappings | length) > 0)
+# | .mappings * .controllerMappings | .zoom
