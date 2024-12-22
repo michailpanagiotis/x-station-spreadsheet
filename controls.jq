@@ -69,7 +69,7 @@
 | del(.groups, .defaultGroup, .controllerGroups, .defaultControllerGroup)
 | del(.parameters)
 # CONTROLLER
-| (.controllerMappings | map({ (.target.controlElementIndex): (
+| (.controllerMappings | map(select(.target.controlElementIndex) | { (.target.controlElementIndex | tostring): (
   select(.controlIsEnabled != false)
   | .source += {
     id: .id,
@@ -104,11 +104,11 @@
 )
 
 
-| group_by(.groupId)
-| map({
-  (.[0].groupId): .
-}) | add
-| with_entries(
-  .value = (.value | map( "\(.groupId),\(.name),\(.id),\(.controllerSource.id),\(.controllerSource.character),\(.controllerSource.channel),\(.controllerSource.type),\(.controllerSource.number)"))
-)
-| to_entries | map(.value) | flatten []
+# | group_by(.groupId)
+# | map({
+#   (.[0].groupId): .
+# }) | add
+# | with_entries(
+#   .value = (.value | map( "\(.groupId),\(.name),\(.id),\(.controllerSource.id),\(.controllerSource.character),\(.controllerSource.channel),\(.controllerSource.type),\(.controllerSource.number)"))
+# )
+# | to_entries | map(.value) | flatten []
