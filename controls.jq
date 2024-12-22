@@ -1,12 +1,26 @@
 .value.mainUnit
 | ({
+  CC: 0,
+  NOTE_VELOCITY: 1,
+  NOTE_NUMBER: 2,
+  PITCH_WHEEL: 3,
+  AFTERTOUCH: 4,
+  PROGRAM_CHANGE_NUMBER: 5,
+  NRPN: 6,
+  POLY_AFTERTOUCH: 7
+} | to_entries) as $CONTROL_TYPE
+| ({
   SMALL_STEP: {"minStepSize":0.005,"maxStepSize":1.0,"minStepFactor":1,"maxStepFactor":1},
+
+
   MINIMAL_STEP: {"minTargetValue":0.99999,"minStepFactor":1,"maxStepFactor":1,"reverseIsEnabled":true},
+  NORMAL_WITH_MAX_VALUE: {"maxTargetValue":0.00001,"minStepFactor":1,"maxStepFactor":1},
+
+
   SINGLE_PRESS: {"minStepFactor":1,"maxStepFactor":1,"outOfRangeBehavior":"min","buttonUsage":"press-only"},
   NORMAL: {"minStepFactor":1,"maxStepFactor":1},
   PERCENT: {"minStepFactor":1,"maxStepFactor":100},
   NORMAL_WITH_MAX_STEP: {"maxSourceValue":0.0,"minStepFactor":1,"maxStepFactor":1},
-  NORMAL_WITH_MAX_VALUE: {"maxTargetValue":0.00001,"minStepFactor":1,"maxStepFactor":1},
   NORMAL_CONTINUOUS: {"minStepFactor":1,"maxStepFactor":1,"turboRate":100,"fireMode":"turbo"},
   RESET_TO_CENTER: {"minTargetValue":0.5,"maxTargetValue":0.5,"minStepFactor":1,"maxStepFactor":1},
   SOURCE_04: {"maxSourceValue":0.4,"minStepFactor":1,"maxStepFactor":1},
@@ -47,52 +61,34 @@
 | del(.id, .name, .controlDeviceId)
 | del(.groups, .defaultGroup, .controllerGroups, .defaultControllerGroup)
 | del(.parameters)
-| {
-  mappings: .mappings | map(
-    select(.controlIsEnabled != false)
-    | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
-    | . += {modifierCondition1: ((.modifierCondition1 as $CURR | ($MODIFIERS | map(select(.value==$CURR).key)[0])) // ($GROUPS[.groupId].modifierCondition1 as $CURR | ($MODIFIERS | map(select(.value==$CURR).key)[0]))) }
-    | del(
-      .id,
-      .groupId,
-      .source.category, # Virtual
-
-      .source.buttonIndex, # 0
+# CONTROLLER
+| (.controllerMappings | map({ (.target.controlElementIndex): (
+  select(.controlIsEnabled != false)
+  | .source += {
+    type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC")
+  }
+  | del(.source.buttonDesign, .source.buttonIndex, .source.is14Bit)
+)}) | add) as $CONTROLS
+# MAPPINGS
+| .mappings | map(
+  .controllerSource = $CONTROLS[.source.controlElementIndex].source
+  | select(.controllerSource)
+  | del(.source)
+  | del(
       .source.buttonDesign, # { "background": { "kind": "Color" }, "foreground": { "kind": "None" }, "static_text": "" }
-
-      .target.learnable, # false
-
-      .target.pollForFeedback, # false
-      .target.mouseAction, # { "kind": "MoveTo", "axis": "X" }
-      .target.takeMappingSnapshot, # { "kind": "ById", "id": "" }
-      .target.useTrackGrouping, # false
-      .target.useSelectionGanging # false
-    )
-    | .
-  ) | group_by(.source.controlElementIndex) | map({ (.[0].source.controlElementIndex): { mappings: (. | map(del(.source))) } }) | add ,
-  controllerMappings: .controllerMappings | map(
-    select(.controlIsEnabled != false)
-    | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
-    | del(
-      .id,
-      .groupId,
       .source.buttonIndex, # 0
-      .source.buttonDesign, # { "background": { "kind": "Color" }, "foreground": { "kind": "None" }, "static_text": "" }
       .source.is14Bit, # false
 
-      .target.category, # Virtual
-      .target.seekBehavior, # "Immediate"
-
-      .target.fxAnchor, # "id"
-
       .target.pollForFeedback, # false
       .target.mouseAction, # { "kind": "MoveTo", "axis": "X" }
       .target.takeMappingSnapshot, # { "kind": "ById", "id": "" }
       .target.useTrackGrouping, # false
-      .target.useSelectionGanging # false
-    )
-    | .
-  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): (.[0] | del(.target)) }) | add
-}
-| .controllerMappings * .mappings
-| to_entries | map(. | select((.value.mappings | length) > 1))
+      .target.useSelectionGanging, # false
+      .target.learnable, #false
+      .target.seekBehavior, # "ReaperPreference" if mode in (MINIMAL_STEP, NORMAL_WITH_MAX_VALUE) else "Immediate"
+      .id,
+      .groupId
+  )
+  | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
+  # | select(.target.seekBehavior == "ReaperPreference")
+)
