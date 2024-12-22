@@ -54,6 +54,8 @@
     | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
     | . += {modifierCondition1: ((.modifierCondition1 as $CURR | ($MODIFIERS | map(select(.value==$CURR).key)[0])) // ($GROUPS[.groupId].modifierCondition1 as $CURR | ($MODIFIERS | map(select(.value==$CURR).key)[0]))) }
     | del(
+      .id,
+      .groupId,
       .source.category, # Virtual
 
       .source.buttonIndex, # 0
@@ -61,32 +63,37 @@
 
       .target.learnable, # false
 
+      .target.pollForFeedback, # false
       .target.mouseAction, # { "kind": "MoveTo", "axis": "X" }
       .target.takeMappingSnapshot, # { "kind": "ById", "id": "" }
       .target.useTrackGrouping, # false
       .target.useSelectionGanging # false
     )
     | .
-  ) | group_by(.source.controlElementIndex) | map({ (.[0].source.controlElementIndex): { mappings: . } }) | add ,
+  ) | group_by(.source.controlElementIndex) | map({ (.[0].source.controlElementIndex): { mappings: (. | map(del(.source))) } }) | add ,
   controllerMappings: .controllerMappings | map(
     select(.controlIsEnabled != false)
     | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
     | del(
+      .id,
+      .groupId,
       .source.buttonIndex, # 0
       .source.buttonDesign, # { "background": { "kind": "Color" }, "foreground": { "kind": "None" }, "static_text": "" }
+      .source.is14Bit, # false
 
       .target.category, # Virtual
-      .target.pollForFeedback, # false
       .target.seekBehavior, # "Immediate"
 
       .target.fxAnchor, # "id"
+
+      .target.pollForFeedback, # false
       .target.mouseAction, # { "kind": "MoveTo", "axis": "X" }
       .target.takeMappingSnapshot, # { "kind": "ById", "id": "" }
       .target.useTrackGrouping, # false
       .target.useSelectionGanging # false
     )
     | .
-  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): .[0] }) | add
+  ) | group_by(.target.controlElementIndex) | map({ (.[0].target.controlElementIndex): (.[0] | del(.target)) }) | add
 }
 | .controllerMappings * .mappings
 | to_entries | map(. | select((.value.mappings | length) > 1))
