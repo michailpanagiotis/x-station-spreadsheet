@@ -1,7 +1,7 @@
 .value.mainUnit
 | ({
   CC: 0,
-  NOTE_VELOCITY: 1,
+  MOMENTARY: 1,
   NOTE_NUMBER: 2,
   PITCH_WHEEL: 3,
   AFTERTOUCH: 4,
@@ -9,6 +9,13 @@
   NRPN: 6,
   POLY_AFTERTOUCH: 7
 } | to_entries) as $CONTROL_TYPE
+| ({
+  RANGE: 0,
+  MOMENTARY: 1,
+  ENDLESS_1: 2,
+  ENDLESS_2: 3,
+  ENDLESS_3: 4,
+} | to_entries) as $PHYSICAL_CONTROL
 | ({
   SMALL_STEP: {"minStepSize":0.005,"maxStepSize":1.0,"minStepFactor":1,"maxStepFactor":1},
 
@@ -54,7 +61,7 @@
   MOD_2_OFF: { "paramIndex": 2, "isOn": false }
 } | to_entries) as $MODIFIERS
 | (.groups | map({ (.id): . }) | add) as $GROUPS
-| (.controllerGroups | map({ (.id): . }) | add) as $CONTROLLER_GROUPS
+| ((.controllerGroups // []) | map({ (.id): . }) | add) as $CONTROLLER_GROUPS
 | del(.version, .controllerNotes, .mainNotes, .instanceFx)
 | del(.stayActiveWhenProjectInBackground, .livesOnUpperFloor)
 | del(.activeControllerId, .activeMainPresetId)
@@ -65,13 +72,19 @@
 | (.controllerMappings | map({ (.target.controlElementIndex): (
   select(.controlIsEnabled != false)
   | .source += {
-    type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC")
+    id: .id,
+    type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC"),
+    character: ((.source.character as $CURR | ($PHYSICAL_CONTROL | map(select(.value==$CURR).key)[0])) // "RANGE"),
+  }
+  | .source += {
+    description: "\(.source.character) Ch\(.source.channel) \(.source.type): \(.source.number)"
   }
   | del(.source.buttonDesign, .source.buttonIndex, .source.is14Bit)
 )}) | add) as $CONTROLS
 # MAPPINGS
 | .mappings | map(
   .controllerSource = $CONTROLS[.source.controlElementIndex].source
+  | select(.controlIsEnabled != false)
   | select(.controllerSource)
   | del(.source)
   | del(
@@ -85,10 +98,17 @@
       .target.useTrackGrouping, # false
       .target.useSelectionGanging, # false
       .target.learnable, #false
-      .target.seekBehavior, # "ReaperPreference" if mode in (MINIMAL_STEP, NORMAL_WITH_MAX_VALUE) else "Immediate"
-      .id,
-      .groupId
+      .target.seekBehavior # "ReaperPreference" if mode in (MINIMAL_STEP, NORMAL_WITH_MAX_VALUE) else "Immediate"
   )
   | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
-  # | select(.target.seekBehavior == "ReaperPreference")
 )
+
+
+| group_by(.groupId)
+| map({
+  (.[0].groupId): .
+}) | add
+| with_entries(
+  .value = (.value | map( "\(.groupId),\(.name),\(.id),\(.controllerSource.id),\(.controllerSource.character),\(.controllerSource.channel),\(.controllerSource.type),\(.controllerSource.number)"))
+)
+| to_entries | map(.value) | flatten []
