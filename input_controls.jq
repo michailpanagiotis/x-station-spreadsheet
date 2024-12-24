@@ -1,6 +1,6 @@
 .value.mainUnit
 | ({
-  CC: 0,
+  CC_VALUE: 0,
   MOMENTARY: 1,
   NOTE_NUMBER: 2,
   PITCH_WHEEL: 3,
@@ -16,6 +16,13 @@
   ENDLESS_2: 3,
   ENDLESS_3: 4,
 } | to_entries) as $PHYSICAL_CONTROL
+| ({
+  BUTTON: { "mode": "NORMAL", "type": "MOMENTARY", "character": "RANGE" },
+  PITCH_WHEEL: { "mode": "NORMAL", "type": "PITCH_WHEEL", "character": "RANGE" },
+  FADER: { "mode": "NORMAL", "type": "CC_VALUE", "character": "RANGE" },
+  ENCODER_1: { "mode": "NORMAL", "type": "CC_VALUE", "character": "ENDLESS_1" },
+  ENCODER_3: { "mode": "PERCENT", "type": "CC_VALUE", "character": "ENDLESS_3" }
+} | to_entries) as $PHYSICAL_GROUP
 | ({
   SMALL_STEP: {"minStepSize":0.005,"maxStepSize":1.0,"minStepFactor":1,"maxStepFactor":1},
 
@@ -68,42 +75,18 @@
 | del(.id, .name, .controlDeviceId)
 | del(.groups, .defaultGroup, .controllerGroups, .defaultControllerGroup)
 | del(.parameters)
-# CONTROLLER
-| (.controllerMappings | map(select(.target.controlElementIndex) | { (.target.controlElementIndex | tostring): (
-  select(.controlIsEnabled != false)
-  | .source += {
-    id: .id,
-    type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC"),
+| .controllerMappings | map(
+  .
+  | . += {
+    mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0])),
     character: ((.source.character as $CURR | ($PHYSICAL_CONTROL | map(select(.value==$CURR).key)[0])) // "RANGE"),
+    type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC_VALUE")
   }
-  | .source += {
-    description: "\(.source.character) @\(.source.channel) \(.source.type): \(.source.number)"
+  | . += {
+    physical: { mode: .mode, type: .type, character: .character }
   }
-  | del(.source.buttonDesign, .source.buttonIndex, .source.is14Bit)
-)}) | add) as $CONTROLS
-# MAPPINGS
-| .mappings | map(
-  .controllerSource = $CONTROLS[.source.controlElementIndex].source
-  | select(.controlIsEnabled != false)
-  | select(.controllerSource)
-  | del(
-      .source.buttonDesign, # { "background": { "kind": "Color" }, "foreground": { "kind": "None" }, "static_text": "" }
-      .source.buttonIndex, # 0
-      .source.is14Bit, # false
-
-      .target.pollForFeedback, # false
-      .target.mouseAction, # { "kind": "MoveTo", "axis": "X" }
-      .target.takeMappingSnapshot, # { "kind": "ById", "id": "" }
-      .target.useTrackGrouping, # false
-      .target.useSelectionGanging, # false
-      .target.learnable, #false
-      .target.seekBehavior # "ReaperPreference" if mode in (MINIMAL_STEP, NORMAL_WITH_MAX_VALUE) else "Immediate"
-  )
-  | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
+  | . += {
+    physical: ((.physical as $CURR | ($PHYSICAL_GROUP | map(select(.value==$CURR).key)[0])) // .physical),
+  }
+  | { id: .id, physical: .physical }
 )
-| map(.controllerSource = .controllerSource.description)
-| group_by(.groupId) | map({ (.[0].groupId): . }) | add
-# | with_entries(
-#   .value = (.value | map( "\(.groupId),\(.name),\(.id),\(.controllerSource.id),\(.controllerSource.character),\(.controllerSource.channel),\(.controllerSource.type),\(.controllerSource.number)"))
-# )
-# | to_entries | map(.value) | flatten []
