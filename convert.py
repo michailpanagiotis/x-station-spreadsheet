@@ -299,7 +299,7 @@ class SingleControl():
 
     @classmethod
     def from_spreadsheet(cls, idx, row):
-        (legend, *values) = (c.value for c in row)
+        (legend, template, *values) = (c.value for c in row)
         fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(cls.FIELD_TYPES)]
         return cls(idx, fields)
 
@@ -618,7 +618,7 @@ class Template():
 
     @classmethod
     def from_spreadsheet(cls, filename):
-        wb = load_workbook(filename=filename)
+        wb = load_workbook(filename=filename, data_only=True)
         ws = wb['Template configuration']
         header_fields = [cls.FIELD_TYPES[idx](row[1].value if row[1].value is not None else "") for idx, row in enumerate(ws.rows)]
 

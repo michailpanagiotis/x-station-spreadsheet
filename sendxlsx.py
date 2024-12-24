@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import sys
-from parser import Template
+from convert import Template
 
 template = Template.from_spreadsheet(sys.argv[1])
 filename = 'last_sent.syx'
