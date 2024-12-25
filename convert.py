@@ -118,7 +118,7 @@ class SingleControl(FieldSet):
         return '%s' % (' '.join([str(x) for x in self.fields]))
 
     def get_template(self):
-        return FieldSet([x for x in self.fields if x.name not in ('Name', 'CC')])
+        return FieldSet([x for x in self.fields if x.name not in ('Name', 'CC', 'Ch')])
 
     @property
     def section(self):
@@ -174,12 +174,10 @@ class SingleControl(FieldSet):
 
         for idx, field in enumerate(self.fields):
             pos = template.get_field_position(field.name)
-            print(pos)
             if pos is not None:
-                value = '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_number, pos + 3)
+                value = '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_number, pos + 2)
             else:
                 value = str(field)
-            print(value)
             if value is None:
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 3, value=value)
@@ -374,14 +372,15 @@ class Template():
 
         wb.create_sheet("Templates")
         wst = wb['Templates']
+        for idx, field in enumerate(self.controls[0].get_template().fields):
+            wst.cell(row=1, column=idx + 2, value=field.name)
+
         wb.create_sheet("Controls")
         ws = wb['Controls']
         ws.cell(row=1, column=1, value='Legend')
         ws.cell(row=1, column=2, value='Template')
         for idx, field in enumerate(self.controls[0].fields):
-            ws.cell(row=1, column=idx + 2, value=field.name)
-        for idx, field in enumerate(self.controls[0].get_template().fields):
-            wst.cell(row=1, column=idx + 2, value=field.name)
+            ws.cell(row=1, column=idx + 3, value=field.name)
         templates = []
         for idx, control in enumerate(self.controls):
             found_template = None
