@@ -56,13 +56,13 @@ REALEARN_CONTROL_TARGET_COMMON = {
 }
 
 KNOWN_TEMPLATES = {
-    "Trigger": bytearray(b'\x01\x7f\x00p\x04@\x00\x0f\x7f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "Toggle": bytearray(b'\x01\x00\x7fx\x04@\x00\x0f\x7f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "Continuous" :bytearray(b'\x01\x00\x7fp\x00@\x00\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "Unary": bytearray(b'\x01?@p\x00A\x00\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "Jog": bytearray(b'\x01?Ap\x00A\x00\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "Pitch": bytearray(b'\n\x00\x7fp\x00A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
-    "-": bytearray(b'\x00\x00\x7fp\x00@\x00\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'),
+    "Trigger": bytearray.fromhex("017f00700440000000000000000000000000000000000000000000000000000000"),
+    "Toggle": bytearray.fromhex("01007f780440000000000000000000000000000000000000000000000000000000"),
+    "Continuous": bytearray.fromhex("01007f700040000000000000000000000000000000000000000000000000000000"),
+    "Unary": bytearray.fromhex("013f40700041000000000000000000000000000000000000000000000000000000"),
+    "Jog": bytearray.fromhex("013f41700041000000000000000000000000000000000000000000000000000000"),
+    "Pitch": bytearray.fromhex("0a007f700041000000000000000000000000000000000000000000000000000000"),
+    "-": bytearray.fromhex("00007f700040000000000000000000000000000000000000000000000000000000"),
 }
 
 class FieldSet():
@@ -102,6 +102,7 @@ class FieldSet():
             if value is None:
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 2, value=value)
+        ws.cell(row=row_number, column=len(self.fields) + 2, value=self.bytes.hex())
 
     def get_known_template_name(self):
         return next((template_name for template_name, template_bytes in KNOWN_TEMPLATES.items() if template_bytes == self.bytes), None)
@@ -118,7 +119,7 @@ class SingleControl(FieldSet):
         return '%s' % (' '.join([str(x) for x in self.fields]))
 
     def get_template(self):
-        return FieldSet([x for x in self.fields if x.name not in ('Name', 'CC', 'Ch')])
+        return FieldSet([x for x in self.fields if x.name not in ('Name', 'CC', 'Ch', 'Default')])
 
     @property
     def section(self):
@@ -251,9 +252,6 @@ class Template():
 
         for idx, byte in enumerate(self.bytes):
             if byte != other.bytes[idx]:
-                print('DIFFERENCE AT BYTE', idx)
-                print(self.bytes[:50])
-                print(other.bytes[:50])
                 return False
         return True
 
@@ -263,28 +261,9 @@ class Template():
         manufacturer = next(str(x) for x in self.header_fields if x.name == 'Manufacturer')
         return ('%s %s' % (manufacturer.strip(), name.strip())).strip()
 
-    def print_all(self, only_unknown=False):
-        for control in self.controls:
-            if only_unknown and control.section != '':
-                continue
-            # print('---- %s | %s | %s'  % (control.legend, control.full_name, control.byte_index, ))
-            print(control.index, control.legend, control)
-            # print('')
-
-    def print_distinct(self, fieldName):
-        print(set([c[fieldName] for c in self.controls]), sys.argv[1])
-
-    def print_fields(self, fieldName):
-        for line in self.controls:
-            print('%s %s %s %s' % (line.legend, line['name'], line['CC|Note'], line[fieldName]))
-
     @property
     def unknowns(self):
         return [x for x in self.controls if x.section == '']
-
-    def print_unknowns(self):
-        for control in self.unknowns:
-            print(control.index + 2, control.csv())
 
     def diff_headers(self, other):
         for idx, header in enumerate(self.header_fields):
@@ -303,10 +282,6 @@ class Template():
                     other_field = other_control.fields[field_index]
                     if field != other_field:
                         print(control.index + 2, control.legend, field.name, str(field), '---->', str(other_field))
-
-    def print_controls(self):
-        for control in self.controls:
-            print(control.csv())
 
     @classmethod
     def from_sysex(cls, filename):
@@ -374,6 +349,8 @@ class Template():
         wst = wb['Templates']
         for idx, field in enumerate(self.controls[0].get_template().fields):
             wst.cell(row=1, column=idx + 2, value=field.name)
+        wst.cell(row=1, column=len(self.controls[0].get_template().fields) + 2, value='Bytes')
+
 
         wb.create_sheet("Controls")
         ws = wb['Controls']
@@ -394,7 +371,6 @@ class Template():
                 found_template.name = known_name if known_name is not None else 'template %s' % (idx + 1)
                 found_template.to_spreadsheet(wst, len(templates) + 2)
                 templates.append(found_template)
-                print(found_template.bytes)
 
             control.to_spreadsheet(ws, idx + 2, found_template.name)
 
