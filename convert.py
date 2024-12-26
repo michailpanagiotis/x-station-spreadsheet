@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import sys
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
-from fields import CONTROL_FIELDS, TEMPLATE_FIELDS
+from fields import CONTROL_FIELDS, CONTROL_TEMPLATE_FIELDS, TEMPLATE_FIELDS
 
 with open('x-station-indices.json', 'r') as f:
     indices = json.loads(f.read())
@@ -65,10 +64,39 @@ KNOWN_TEMPLATES = {
     "-": bytearray.fromhex("00007f700040000000000000000000000000000000000000000000000000000000"),
 }
 
+TEST_TEMPLATE = '1,0,127,01110000,0,0,0,0,0,0,000000000000000000000000000000000000,0,4'
+
 class FieldSet():
+    @classmethod
+    def from_definition(cls, definition, values):
+        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(definition)]
+        return cls(fields)
+
+    @classmethod
+    def from_csv(cls, definition, string):
+        values = string.split(',')
+        return cls.from_definition(definition, values)
+
+    @classmethod
+    def from_bytes(cls, definition, bytes, name):
+        if len(bytes) != sum(j.get_length() for j in definition):
+            raise Exception('bad length')
+
+        if not isinstance(bytes, bytearray):
+            raise Exception('expecting a bytearray instance')
+        fields = [ct._pop_from(bytes) for ct in definition]
+        if len(bytes) != 0:
+            raise Exception('non parsed fields')
+        return cls(fields, name)
+
     def __init__(self, fields, name=None):
-        self.name = name
+        self._name = name
         self.fields = fields
+
+    @property
+    def name(self):
+        name = next((str(x) for x in self.fields if x.name == 'Name'), None)
+        return name if name else self._name
 
     @property
     def bytes(self):
@@ -77,8 +105,15 @@ class FieldSet():
             bytes.extend(field.bytes)
         return bytes
 
+    @property
+    def csv(self):
+        return ','.join([str(x) for x in self.fields])
+
     def __len__(self):
         return len(self.bytes)
+
+    def __str__(self):
+        return '<%s: %s>' % (self.name, self.csv)
 
     def __getitem__(self, key):
         field = next((x for x in self.fields if x.name == key), None)
@@ -89,7 +124,10 @@ class FieldSet():
     def __eq__(self, other):
         return self.bytes == other.bytes
 
-    def get_field_position(self, field_name):
+    def get_field_names(self):
+        return [field.name for field in self.fields]
+
+    def find_index(self, field_name):
         for idx, field in enumerate(self.fields):
             if field.name == field_name:
                 return idx
@@ -104,22 +142,18 @@ class FieldSet():
             ws.cell(row=row_number, column=idx + 2, value=value)
         ws.cell(row=row_number, column=len(self.fields) + 2, value=self.bytes.hex())
 
-    def get_known_template_name(self):
-        return next((template_name for template_name, template_bytes in KNOWN_TEMPLATES.items() if template_bytes == self.bytes), None)
-
 class SingleControl(FieldSet):
     def __init__(self, idx, fields):
-        name = next(x.bytes for x in fields if x.name == 'Name')
         self.index = idx
-        self.full_name = ''.join([chr(x) for x in name])
-        self.name = self.full_name.strip()
         self.fields = fields
 
-    def __str__(self):
-        return '%s' % (' '.join([str(x) for x in self.fields]))
-
     def get_template(self):
-        return FieldSet([x for x in self.fields if x.name not in ('Name', 'CC', 'Ch', 'Default')])
+        values = []
+        for definition in CONTROL_TEMPLATE_FIELDS:
+            name = definition.get_name()
+            values.append(str(self[name]))
+
+        return FieldSet.from_definition(CONTROL_TEMPLATE_FIELDS, values)
 
     @property
     def section(self):
@@ -174,11 +208,8 @@ class SingleControl(FieldSet):
         template = self.get_template()
 
         for idx, field in enumerate(self.fields):
-            pos = template.get_field_position(field.name)
-            if pos is not None:
-                value = '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_number, pos + 2)
-            else:
-                value = str(field)
+            pos = template.find_index(field.name)
+            value = '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_number, pos + 2) if pos is not None else str(field)
             if value is None:
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 3, value=value)
@@ -335,6 +366,10 @@ class Template():
         controls = [SingleControl.from_spreadsheet(idx - 1, row) for idx, row in enumerate(ws.rows) if idx > 0]
         return cls(header_fields, controls)
 
+    def get_control_templates(self):
+        permutations = {bytes(t.get_template().bytes) for t in self.controls}
+        templates = [FieldSet.from_bytes(CONTROL_TEMPLATE_FIELDS, bytearray(x), 'template%s' % idx) for idx, x in enumerate(permutations)]
+        return templates
 
     def to_spreadsheet(self, filename):
         wb = Workbook()
@@ -356,9 +391,14 @@ class Template():
         ws = wb['Controls']
         ws.cell(row=1, column=1, value='Legend')
         ws.cell(row=1, column=2, value='Template')
-        for idx, field in enumerate(self.controls[0].fields):
-            ws.cell(row=1, column=idx + 3, value=field.name)
-        templates = []
+        for idx, name in enumerate(self.controls[0].get_field_names()):
+            ws.cell(row=1, column=idx + 3, value=name)
+
+        templates = self.get_control_templates()
+        for idx, template in enumerate(templates):
+            template.to_spreadsheet(wst, idx + 2)
+            print(template)
+
         for idx, control in enumerate(self.controls):
             found_template = None
             for template in templates:
@@ -366,11 +406,7 @@ class Template():
                     found_template = template
 
             if not found_template:
-                found_template = control.get_template()
-                known_name = found_template.get_known_template_name()
-                found_template.name = known_name if known_name is not None else 'template %s' % (idx + 1)
-                found_template.to_spreadsheet(wst, len(templates) + 2)
-                templates.append(found_template)
+                raise Exception('unknown template')
 
             control.to_spreadsheet(ws, idx + 2, found_template.name)
 
