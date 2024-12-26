@@ -5,3 +5,5 @@ factory_templates/
 additional_templates/
 
 __pycache__/
+
+.~*#

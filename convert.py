@@ -55,40 +55,41 @@ REALEARN_CONTROL_TARGET_COMMON = {
 }
 
 KNOWN_TEMPLATES = {
-    "Trigger": bytearray.fromhex("017f00700440000000000000000000000000000000000000000000000000000000"),
-    "Toggle": bytearray.fromhex("01007f780440000000000000000000000000000000000000000000000000000000"),
-    "Continuous": bytearray.fromhex("01007f700040000000000000000000000000000000000000000000000000000000"),
-    "Unary": bytearray.fromhex("013f40700041000000000000000000000000000000000000000000000000000000"),
-    "Jog": bytearray.fromhex("013f41700041000000000000000000000000000000000000000000000000000000"),
-    "Pitch": bytearray.fromhex("0a007f700041000000000000000000000000000000000000000000000000000000"),
-    "-": bytearray.fromhex("00007f700040000000000000000000000000000000000000000000000000000000"),
+    "Trigger": "1,127,0,01110000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Toggle": "1,0,127,01111000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Momentary": "1,0,127,01110100,0,0,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Continuous": "1,0,127,01110000,0,0,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "ContinuousPickup": "1,0,127,01110000,9,64,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Unary": "1,63,64,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Jog": "1,63,65,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Pitch": "10,0,127,01110000,0,1,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "-": "0,0,127,01110000,0,64,0,0,0,0,000000000000000000000000000000000000,0,4",
 }
-
-TEST_TEMPLATE = '1,0,127,01110000,0,0,0,0,0,0,000000000000000000000000000000000000,0,4'
 
 class FieldSet():
     @classmethod
-    def from_values(cls, values, definition):
+    def from_values(cls, definition, values, *args, **kwargs):
         fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(definition)]
-        return cls(fields)
+        return cls(fields, *args, **kwargs)
 
     @classmethod
-    def from_csv(cls, string, *args, **kwargs):
+    def from_csv(cls, definition, string, *args, **kwargs):
         values = string.split(',')
-        return cls.from_values(values, *args, **kwargs)
+        return cls.from_values(definition, values, *args, **kwargs)
 
     @classmethod
-    def from_bytes(cls, bytes, name, definition):
-        if not isinstance(bytes, bytearray):
+    def from_bytes(cls, definition, sysex, *args, **kwargs):
+        # important to be bytearray (mutable)
+        if not isinstance(sysex, bytearray):
             raise Exception('expecting a bytearray instance')
-        if len(bytes) != sum(j.get_length() for j in definition):
+        if len(sysex) != sum(j.get_length() for j in definition):
             raise Exception('bad length')
 
-        fields = [ct._pop_from(bytes) for ct in definition]
+        fields = [ct._pop_from(sysex) for ct in definition]
 
-        if len(bytes) != 0:
+        if len(sysex) != 0:
             raise Exception('non parsed fields')
-        return cls(fields, name)
+        return cls(fields, *args, **kwargs)
 
     def __init__(self, fields, name=None):
         self._name = name
@@ -98,6 +99,10 @@ class FieldSet():
     def name(self):
         name = next((str(x) for x in self.fields if x.name == 'Name'), None)
         return name if name else self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
     def bytes(self):
@@ -145,29 +150,21 @@ class FieldSet():
 
 class SingleControl(FieldSet):
     @classmethod
-    def from_sysex(cls, idx, cmd):
-        if isinstance(cmd, bytes):
-            if len(cmd) != 52:
-                raise Exception('bad length')
+    def from_bytes(cls, *args, **kwargs):
+        return super(SingleControl, cls).from_bytes(CONTROL_FIELDS, *args, **kwargs)
 
-            cmd = bytearray(cmd)
-
-        fields = [ct._pop_from(cmd) for ct in CONTROL_FIELDS]
-
-        if len(cmd) != 0:
-            raise Exception('non parsed fields')
-
-        return cls(idx, fields)
+    @classmethod
+    def from_values(cls, *args, **kwargs):
+        return super(SingleControl, cls).from_values(CONTROL_FIELDS, *args, **kwargs)
 
     @classmethod
     def from_spreadsheet(cls, idx, row):
         (legend, template, *values) = (c.value for c in row)
-        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(CONTROL_FIELDS)]
-        return cls(idx, fields)
+        return super(SingleControl, cls).from_values(CONTROL_FIELDS, values, index=idx)
 
-    def __init__(self, idx, fields):
-        self.index = idx
-        self.fields = fields
+    def __init__(self, fields, index):
+        super().__init__(fields)
+        self.index = index
 
     def get_template(self):
         values = []
@@ -175,7 +172,7 @@ class SingleControl(FieldSet):
             name = definition.get_name()
             values.append(str(self[name]))
 
-        return FieldSet.from_values(values, CONTROL_TEMPLATE_FIELDS)
+        return FieldSet.from_values(CONTROL_TEMPLATE_FIELDS, values)
 
     @property
     def section(self):
@@ -340,7 +337,7 @@ class Template():
                 for ct in TEMPLATE_FIELDS
             ],
             controls = [
-                SingleControl.from_sysex(idx, controls[i:i + cls.LINE_SIZE])
+                SingleControl.from_bytes(bytearray(controls[i:i + cls.LINE_SIZE]), index=idx)
                 for idx, i in enumerate(range(0, len(controls), cls.LINE_SIZE))
             ],
         )
@@ -367,9 +364,29 @@ class Template():
         controls = [SingleControl.from_spreadsheet(idx - 1, row) for idx, row in enumerate(ws.rows) if idx > 0]
         return cls(header_fields, controls)
 
-    def get_control_templates(self):
+    def __get_control_templates(self):
         permutations = {bytes(t.get_template().bytes) for t in self.controls}
-        templates = [FieldSet.from_bytes(bytearray(x), 'template%s' % idx, CONTROL_TEMPLATE_FIELDS) for idx, x in enumerate(permutations)]
+        known = [FieldSet.from_csv(CONTROL_TEMPLATE_FIELDS, csv, name=name) for name, csv in KNOWN_TEMPLATES.items()]
+        templates = []
+        for idx, x in enumerate(permutations):
+            name = 'template%s' % idx
+            template = FieldSet.from_bytes(CONTROL_TEMPLATE_FIELDS, bytearray(x), name)
+            match = next((x for x in known if x == template), None)
+            if match:
+                template.name = match.name
+            templates.append(template)
+        return templates
+
+    def __templates_to_spreadsheet(self, wb):
+        wb.create_sheet("Templates")
+        wst = wb['Templates']
+        for idx, field in enumerate(self.controls[0].get_template().fields):
+            wst.cell(row=1, column=idx + 2, value=field.name)
+        wst.cell(row=1, column=len(self.controls[0].get_template().fields) + 2, value='Bytes')
+        templates = self.__get_control_templates()
+        for idx, template in enumerate(templates):
+            template.to_spreadsheet(wst, idx + 2)
+            print(template)
         return templates
 
     def to_spreadsheet(self, filename):
@@ -381,12 +398,7 @@ class Template():
             ws.cell(row=idx+1, column=1, value=field.name)
             ws.cell(row=idx+1, column=2, value=str(field))
 
-        wb.create_sheet("Templates")
-        wst = wb['Templates']
-        for idx, field in enumerate(self.controls[0].get_template().fields):
-            wst.cell(row=1, column=idx + 2, value=field.name)
-        wst.cell(row=1, column=len(self.controls[0].get_template().fields) + 2, value='Bytes')
-
+        templates = self.__templates_to_spreadsheet(wb)
 
         wb.create_sheet("Controls")
         ws = wb['Controls']
@@ -394,11 +406,6 @@ class Template():
         ws.cell(row=1, column=2, value='Template')
         for idx, name in enumerate(self.controls[0].get_field_names()):
             ws.cell(row=1, column=idx + 3, value=name)
-
-        templates = self.get_control_templates()
-        for idx, template in enumerate(templates):
-            template.to_spreadsheet(wst, idx + 2)
-            print(template)
 
         for idx, control in enumerate(self.controls):
             found_template = None
