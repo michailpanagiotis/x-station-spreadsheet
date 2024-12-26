@@ -68,23 +68,24 @@ TEST_TEMPLATE = '1,0,127,01110000,0,0,0,0,0,0,0000000000000000000000000000000000
 
 class FieldSet():
     @classmethod
-    def from_definition(cls, definition, values):
+    def from_values(cls, values, definition):
         fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(definition)]
         return cls(fields)
 
     @classmethod
-    def from_csv(cls, definition, string):
+    def from_csv(cls, string, *args, **kwargs):
         values = string.split(',')
-        return cls.from_definition(definition, values)
+        return cls.from_values(values, *args, **kwargs)
 
     @classmethod
-    def from_bytes(cls, definition, bytes, name):
+    def from_bytes(cls, bytes, name, definition):
+        if not isinstance(bytes, bytearray):
+            raise Exception('expecting a bytearray instance')
         if len(bytes) != sum(j.get_length() for j in definition):
             raise Exception('bad length')
 
-        if not isinstance(bytes, bytearray):
-            raise Exception('expecting a bytearray instance')
         fields = [ct._pop_from(bytes) for ct in definition]
+
         if len(bytes) != 0:
             raise Exception('non parsed fields')
         return cls(fields, name)
@@ -143,6 +144,27 @@ class FieldSet():
         ws.cell(row=row_number, column=len(self.fields) + 2, value=self.bytes.hex())
 
 class SingleControl(FieldSet):
+    @classmethod
+    def from_sysex(cls, idx, cmd):
+        if isinstance(cmd, bytes):
+            if len(cmd) != 52:
+                raise Exception('bad length')
+
+            cmd = bytearray(cmd)
+
+        fields = [ct._pop_from(cmd) for ct in CONTROL_FIELDS]
+
+        if len(cmd) != 0:
+            raise Exception('non parsed fields')
+
+        return cls(idx, fields)
+
+    @classmethod
+    def from_spreadsheet(cls, idx, row):
+        (legend, template, *values) = (c.value for c in row)
+        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(CONTROL_FIELDS)]
+        return cls(idx, fields)
+
     def __init__(self, idx, fields):
         self.index = idx
         self.fields = fields
@@ -153,7 +175,7 @@ class SingleControl(FieldSet):
             name = definition.get_name()
             values.append(str(self[name]))
 
-        return FieldSet.from_definition(CONTROL_TEMPLATE_FIELDS, values)
+        return FieldSet.from_values(values, CONTROL_TEMPLATE_FIELDS)
 
     @property
     def section(self):
@@ -179,27 +201,6 @@ class SingleControl(FieldSet):
     def legend(self):
         legend = '%s>%s' % (self.group, indices[self.index]['legend'])
         return legend
-
-    @classmethod
-    def from_sysex(cls, idx, cmd):
-        if isinstance(cmd, bytes):
-            if len(cmd) != 52:
-                raise Exception('bad length')
-
-            cmd = bytearray(cmd)
-
-        fields = [ct._pop_from(cmd) for ct in CONTROL_FIELDS]
-
-        if len(cmd) != 0:
-            raise Exception('non parsed fields')
-
-        return cls(idx, fields)
-
-    @classmethod
-    def from_spreadsheet(cls, idx, row):
-        (legend, template, *values) = (c.value for c in row)
-        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(CONTROL_FIELDS)]
-        return cls(idx, fields)
 
     def to_spreadsheet(self, ws, row_number, template_name):
         ws.cell(row=row_number, column=1, value=self.legend.strip())
@@ -368,7 +369,7 @@ class Template():
 
     def get_control_templates(self):
         permutations = {bytes(t.get_template().bytes) for t in self.controls}
-        templates = [FieldSet.from_bytes(CONTROL_TEMPLATE_FIELDS, bytearray(x), 'template%s' % idx) for idx, x in enumerate(permutations)]
+        templates = [FieldSet.from_bytes(bytearray(x), 'template%s' % idx, CONTROL_TEMPLATE_FIELDS) for idx, x in enumerate(permutations)]
         return templates
 
     def to_spreadsheet(self, filename):
