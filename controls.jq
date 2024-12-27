@@ -10,7 +10,7 @@
   POLY_AFTERTOUCH: 7
 } | to_entries) as $CONTROL_TYPE
 | ({
-  RANGE: 0,
+  CONTINUOUS: 0,
   MOMENTARY: 1,
   ENDLESS_1: 2,
   ENDLESS_2: 3,
@@ -74,7 +74,7 @@
   | .source += {
     id: .id,
     type: ((.source.type as $CURR | ($CONTROL_TYPE | map(select(.value==$CURR).key)[0])) // "CC"),
-    character: ((.source.character as $CURR | ($PHYSICAL_CONTROL | map(select(.value==$CURR).key)[0])) // "RANGE"),
+    character: ((.source.character as $CURR | ($PHYSICAL_CONTROL | map(select(.value==$CURR).key)[0])) // "CONTINUOUS"),
   }
   | .source += {
     description: "\(.source.character) @\(.source.channel) \(.source.type): \(.source.number)"
@@ -102,7 +102,8 @@
   | . += {mode: (.mode as $CURR | ($MODES | map(select(.value==$CURR).key)[0]))}
 )
 | map(.controllerSource = .controllerSource.description)
-| group_by(.groupId) | map({ (.[0].groupId): . }) | add
+| map(.mode)
+# | group_by(.groupId) | map({ (.[0].groupId): . }) | add
 # | with_entries(
 #   .value = (.value | map( "\(.groupId),\(.name),\(.id),\(.controllerSource.id),\(.controllerSource.character),\(.controllerSource.channel),\(.controllerSource.type),\(.controllerSource.number)"))
 # )
