@@ -2,10 +2,27 @@
 import json
 import functools
 from openpyxl import Workbook, load_workbook
-from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
+from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet, Reference
 
 with open('x-station-indices.json', 'r') as f:
     indices = json.loads(f.read())
+
+def get_control_section(idx):
+    return indices[idx]['section']
+
+def get_control_physical(idx):
+    return indices[idx].get('physical', None)
+
+def get_control_label(idx):
+    if 'selector' not in indices[idx]:
+        return indices[idx]['legend']
+    return '%s (%s)' % (indices[idx]['legend'], indices[idx]['selector'])
+
+def get_control_legend(idx):
+    selector = '(%s)' % indices[idx]['selector'] if 'selector' in indices[idx] else ''
+    group = '%s%s' % (indices[idx]['section'], selector)
+    legend = '%s>%s' % (group, indices[idx]['legend'])
+    return legend.strip()
 
 Sysex = define_field(NumericArray, num_bytes=18, name="Sysex")
 ControlName = define_field(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
@@ -272,33 +289,8 @@ class SingleControl(FieldSet):
         super().__init__(fields)
         self.index = index
 
-    @property
-    def section(self):
-        return indices[self.index]['section']
-
-    @property
-    def group(self):
-        selector = '(%s)' % indices[self.index]['selector'] if 'selector' in indices[self.index] else ''
-        group = '%s%s' % (indices[self.index]['section'], selector)
-        return group
-
-    @property
-    def label(self):
-        if 'selector' not in indices[self.index]:
-            return indices[self.index]['legend']
-        return '%s (%s)' % (indices[self.index]['legend'], indices[self.index]['selector'])
-
-    @property
-    def physical(self):
-        return indices[self.index].get('physical', None)
-
-    @property
-    def legend(self):
-        legend = '%s>%s' % (self.group, indices[self.index]['legend'])
-        return legend
-
     def to_spreadsheet(self, ws, row_number, template_name):
-        ws.cell(row=row_number, column=1, value=self.legend.strip())
+        ws.cell(row=row_number, column=1, value=get_control_legend(row_number - 2))
         ws.cell(row=row_number, column=2, value=template_name)
 
         template = self.get_subset(CONTROL_TEMPLATE_FIELDS)
@@ -310,15 +302,15 @@ class SingleControl(FieldSet):
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 3, value=value)
 
-    def to_realearn_dict(self):
-        id = '%s. %s' % (self.index, self.legend)
+    def to_realearn_dict(self, idx):
+        id = '%s. %s' % (idx, get_control_legend(idx))
         control = {
           "id": id,
-          "name": self.label,
-          "groupId": self.section,
+          "name": get_control_label(idx),
+          "groupId": get_control_section(idx),
           "source": {
             **REALEARN_CONTROL_SOURCE_COMMON,
-            "character": 1 if self.physical == 'Button' else 0,
+            "character": 1 if get_control_physical(idx) == 'Button' else 0,
             "channel": int(str(self['Ch'])),
             "number": int(str(self['CC'])),
           },
@@ -330,8 +322,8 @@ class SingleControl(FieldSet):
           },
           "target": {
                 **REALEARN_CONTROL_TARGET_COMMON,
-                "controlElementType": "Button" if self.physical == 'Button' else None,
-                "controlElementIndex": "%s-%s" % (self.section, self.label),
+                "controlElementType": "Button" if get_control_physical(idx) == 'Button' else None,
+                "controlElementIndex": "%s-%s" % (get_control_section(idx), get_control_label(idx)),
           },
           "feedbackIsEnabled": False,
           "visibleInProjection": False
@@ -518,20 +510,27 @@ class Template():
 
     def to_json(self, filename):
         id = self.name
-        groups = {c.section for c in self.controls if c.section != ''}
+        groups = {get_control_section(idx) for idx, c in enumerate(self.controls) if get_control_section(idx) != ''}
         main = {
           "version": "2.16.14",
           "name": "x-station",
           "defaultGroup": {},
           "groups": [{"id": s, "name": s} for s in groups],
-          "mappings": [c.to_realearn_dict() for c in self.controls if c.physical is not None],
+          "mappings": [c.to_realearn_dict(idx) for idx, c in enumerate(self.controls) if get_control_physical(idx) is not None],
         }
         with open(filename, "w") as f:
             f.write(json.dumps(main, indent=2))
 
+    def __get_control_legend(self, idx):
+        selector = '(%s)' % indices[idx]['selector'] if 'selector' in indices[idx] else ''
+        group = '%s%s' % (indices[idx]['section'], selector)
+        legend = '%s>%s' % (group, indices[idx]['legend'])
+        return legend.strip()
+
     def to_sql(
         self,
-        _field_to_relative = lambda control, template, field: '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (control.index + 2, template.find_index(field.name) + 2) if template.find_index(field.name) is not None else str(field),
+        _field_to_relative = lambda control, template, field: Reference(template.find_index(field.name)) if template.find_index(field.name) is not None else str(field),
+        # _field_to_relative = lambda control, template, field: '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (control.index + 2, template.find_index(field.name) + 2) if template.find_index(field.name) is not None else str(field),
     ):
 
         templates = self.__get_control_templates()
@@ -539,7 +538,7 @@ class Template():
         return [
             control.get_values(
                 [
-                    lambda c: c.legend.strip(),
+                    lambda _: get_control_legend(idx),
                     lambda c: next((x.name for x in templates if x == c.get_subset(CONTROL_TEMPLATE_FIELDS)), None),
                 ],
                 conversion=functools.partial(_field_to_relative, control, control.get_subset(CONTROL_TEMPLATE_FIELDS)),

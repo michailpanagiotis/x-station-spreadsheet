@@ -6,7 +6,7 @@ from pathlib import Path
 from xstation_parser import Template
 
 filenames = []
-for root,_,files in os.walk('.'):
+for root,_,files in os.walk('./additional_templates'):
     for file in [Path(os.path.join(root, x)).absolute() for x in files]:
         if file.suffix == '.syx':
             template = Template.from_sysex(file)
