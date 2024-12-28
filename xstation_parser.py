@@ -289,6 +289,9 @@ class SingleControl(FieldSet):
         super().__init__(fields)
         self.index = index
 
+    def get_template(self):
+        return self.get_subset(CONTROL_TEMPLATE_FIELDS)
+
     def to_spreadsheet(self, ws, row_number, template_name):
         ws.cell(row=row_number, column=1, value=get_control_legend(row_number - 2))
         ws.cell(row=row_number, column=2, value=template_name)
@@ -301,6 +304,15 @@ class SingleControl(FieldSet):
             if value is None:
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 3, value=value)
+
+    def get_references(self, other_fieldset_definition=CONTROL_TEMPLATE_FIELDS):
+        other_fields = self.get_subset(CONTROL_TEMPLATE_FIELDS)
+        references = []
+        for idx, field in enumerate(self.fields):
+            other_idx = other_fields.find_index(field.name)
+            if other_idx is not None:
+                references.append((idx, other_idx))
+        return references
 
     def to_realearn_dict(self, idx):
         id = '%s. %s' % (idx, get_control_legend(idx))
@@ -454,8 +466,9 @@ class Template():
         controls = [SingleControl.from_spreadsheet(idx - 1, row) for idx, row in enumerate(ws.rows) if idx > 0]
         return cls(header_fields, controls)
 
-    def __get_control_templates(self):
-        permutations = {bytes(t.get_subset(CONTROL_TEMPLATE_FIELDS).bytes) for t in self.controls}
+    @staticmethod
+    def extract_templates(controls):
+        permutations = {bytes(t.get_subset(CONTROL_TEMPLATE_FIELDS).bytes) for t in controls}
         known = [FieldSet.from_csv(CONTROL_TEMPLATE_FIELDS, csv, name=name) for name, csv in KNOWN_TEMPLATES.items()]
         templates = []
         for idx, x in enumerate(permutations):
@@ -473,7 +486,7 @@ class Template():
         for idx, field in enumerate(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields):
             wst.cell(row=1, column=idx + 2, value=field.name)
         wst.cell(row=1, column=len(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields) + 2, value='Bytes')
-        templates = self.__get_control_templates()
+        templates = self.extract_templates()
         for idx, template in enumerate(templates):
             template.to_spreadsheet(wst, idx + 2)
             print(template)
@@ -527,24 +540,28 @@ class Template():
         legend = '%s>%s' % (group, indices[idx]['legend'])
         return legend.strip()
 
-    def to_sql(
-        self,
-        _field_to_relative = lambda control, template, field: Reference(template.find_index(field.name)) if template.find_index(field.name) is not None else str(field),
-        # _field_to_relative = lambda control, template, field: '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (control.index + 2, template.find_index(field.name) + 2) if template.find_index(field.name) is not None else str(field),
-    ):
+    def get_control_values(self):
+        return [control.get_values() for control in self.controls]
 
-        templates = self.__get_control_templates()
+    def to_sql(self):
+        templates = self.extract_templates(self.controls)
 
-        return [
-            control.get_values(
-                [
-                    lambda _: get_control_legend(idx),
-                    lambda c: next((x.name for x in templates if x == c.get_subset(CONTROL_TEMPLATE_FIELDS)), None),
-                ],
-                conversion=functools.partial(_field_to_relative, control, control.get_subset(CONTROL_TEMPLATE_FIELDS)),
-            )
+        values = [
+            [
+                get_control_legend(idx),
+                next((x.name for x in templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None),
+            ] +  control.get_values()
             for idx, control in enumerate(self.controls)
         ]
+
+        for value in values:
+            print(value)
+
+        # for control in self.controls:
+        #     refs = control.get_references()
+        #     print(refs)
+
+        return values
 
     def control_permutations(self, field_name):
         return {str(c[field_name]) for c in self.controls}
