@@ -59,7 +59,7 @@ class RawBytes():
         if len(self.valid_values) > 0:
             for byte in self.bytes:
                if byte not in self.valid_values:
-                    raise Exception('unsupported option %s' % byte)
+                    raise Exception('unsupported option for %s (%s)' % (type(self), byte))
 
 
     def __str__(self):

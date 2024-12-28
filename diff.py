@@ -1,13 +1,27 @@
 #!/usr/bin/env python3
-import sys
+from argparse import ArgumentParser
+from pathlib import Path
+from xstation_parser import Template
 
-with open(sys.argv[1], "rb") as f:
-    bytes_1 = f.read()
+parser = ArgumentParser(
+    prog='x-station-sheet',
+    description='Converts from Novation X-station Sysex to Excel files and back',
+)
 
-with open(sys.argv[2], "rb") as f:
-    bytes_2 = f.read()
+parser.add_argument('filename1')
+parser.add_argument('filename2')
+args = parser.parse_args()
 
-for idx, x in enumerate(bytes_1):
-    if bytes_2[idx] != x:
-        print('difference at', idx, bytes_1[idx], bytes_2[idx])
-        exit()
+path1 = Path(args.filename1).absolute()
+path2 = Path(args.filename2).absolute()
+
+if path1.suffix != ".syx":
+    raise Exception("expecting first file to be a '.syx' file")
+
+if path2.suffix != ".syx":
+    raise Exception("expecting second file to be a '.syx' file")
+
+template1 = Template.from_sysex(path1)
+template2 = Template.from_sysex(path2)
+
+template1.diff(template2)

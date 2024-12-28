@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import json
-import functools
 from openpyxl import Workbook, load_workbook
-from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet, Reference
+from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
 
 with open('x-station-indices.json', 'r') as f:
     indices = json.loads(f.read())
@@ -87,7 +86,7 @@ TEMPLATE_FIELDS = [
     Pad2,
     define_field(SelectValue, name='Velocity curve', valid_values=[0, 1, 2, 3]),
     define_field(SelectValue, name='Select 2', valid_values=[4, 5]),
-    define_field(SelectValue, name='Aftertouch | Auto Snapshot | Not Synth', valid_values=[0, 2, 3, 4, 5, 6, 7]),
+    define_field(SelectValue, name='Aftertouch | Auto Snapshot | Not Synth', valid_values=[0, 1, 2, 3, 4, 5, 6, 7]),
     define_field(NumericValue, name='Override MIDI Ch'),
     define_field(SelectValue, name='Touchpad X Type', valid_values=[0, 1, 2]),
     define_field(SelectValue, name='Touchpad Y Type', valid_values=[0, 1, 2]),
@@ -347,9 +346,10 @@ class Template():
     MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
     MESSAGE_END=b'\x124\xf7'
 
-    def __init__(self, header_fields, controls):
+    def __init__(self, header_fields, controls, sysex=None):
         self.header_fields = header_fields
         self.controls = controls
+        self.sysex = sysex
 
     @property
     def bytes(self):
@@ -427,8 +427,8 @@ class Template():
 
         body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
         offset = 405 - len(Template.MESSAGE_START)
-        full_header = bytearray(body[:offset])
-        controls = body[len(full_header):]
+        full_header = bytearray(body[:offset]) # 396 bytes
+        controls_bytes = body[len(full_header):] # 52 x 149 = 7748 bytes
 
         if len(full_header) != 396:
             raise Exception('bad header bytes length')
@@ -439,16 +439,17 @@ class Template():
                 for ct in TEMPLATE_FIELDS
             ],
             controls = [
-                SingleControl.from_bytes(bytearray(controls[i:i + cls.LINE_SIZE]), index=idx)
-                for idx, i in enumerate(range(0, len(controls), cls.LINE_SIZE))
+                SingleControl.from_bytes(bytearray(controls_bytes[i:i + cls.LINE_SIZE]), index=idx)
+                for idx, i in enumerate(range(0, len(controls_bytes), cls.LINE_SIZE))
             ],
+            sysex = body
         )
 
         bytes = instance.bytes
 
         for idx, byte in enumerate(file_contents):
             if byte != bytes[idx]:
-                raise Exception('bad serializing')
+                raise Exception('bad serializing %s %s' % (byte, bytes[idx]))
 
         return instance
 
@@ -486,7 +487,7 @@ class Template():
         for idx, field in enumerate(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields):
             wst.cell(row=1, column=idx + 2, value=field.name)
         wst.cell(row=1, column=len(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields) + 2, value='Bytes')
-        templates = self.extract_templates()
+        templates = self.extract_templates(self.controls)
         for idx, template in enumerate(templates):
             template.to_spreadsheet(wst, idx + 2)
             print(template)
@@ -565,3 +566,22 @@ class Template():
 
     def control_permutations(self, field_name):
         return {str(c[field_name]) for c in self.controls}
+
+    def diff(self, other):
+        template_diffs = []
+        field_diffs = []
+
+        other_headers = other.header_fields
+        for idx, control in enumerate(self.header_fields):
+            if control != other_headers[idx]:
+                template_diffs.append([idx, control, other_headers[idx]])
+
+        other_controls = other.controls
+        for idx, control in enumerate(self.controls):
+            for field_idx, field in enumerate(control.fields):
+                other_field = other_controls[idx].fields[field_idx]
+                if field != other_field:
+                    field_diffs.append([idx, field_idx, field.name, str(field), str(other_field)])
+
+        print('TEMPLATE DIFFS', template_diffs)
+        print('FIELD DIFFS', field_diffs)

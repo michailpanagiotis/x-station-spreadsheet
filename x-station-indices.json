@@ -36,16 +36,20 @@
   {
     "section": "OSCS - MIXER",
     "legend": "PWM",
-    "selector": "Osc 1",
+    "selector": "Osc 1 - Pos",
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 1 - Lfo",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 1 - Env",
+    "physical": "Pot"
   },
   {
     "section": "OSCS - MIXER",
