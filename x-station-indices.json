@@ -102,16 +102,20 @@
   {
     "section": "OSCS - MIXER",
     "legend": "PWM",
-    "selector": "Osc 2",
+    "selector": "Osc 2 - Pos",
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 2 - Lfo",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 2 - Env",
+    "physical": "Pot"
   },
   {
     "section": "OSCS - MIXER",
@@ -164,16 +168,20 @@
   {
     "section": "OSCS - MIXER",
     "legend": "PWM",
-    "selector": "Osc 3",
+    "selector": "Osc 3 - Pos",
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 3 - Lfo",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Osc 3 - Env",
+    "physical": "Pot"
   },
   {
     "section": "OSCS - MIXER",
@@ -226,16 +234,20 @@
   {
     "section": "OSCS - MIXER",
     "legend": "PWM",
-    "selector": "Noise",
+    "selector": "Noise - Pos",
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Noise - Lfo",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "Noise - Env",
+    "physical": "Pot"
   },
   {
     "section": "OSCS - MIXER",
@@ -262,48 +274,70 @@
     "physical": "Button"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "WAVEFORM",
+    "selector": "X mod",
+    "physical": "Encoder"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "SEMITONE",
+    "selector": "X mod",
+    "physical": "Encoder"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "DETUNE",
+    "selector": "X mod",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "LEVEL",
+    "selector": "X mod",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "X mod - Pos",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "X mod - Lfo",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "PWM",
+    "selector": "X mod - Env",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "OCTAVE",
+    "selector": "X mod",
+    "physical": "Button"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "ENV DEPTH",
+    "selector": "X mod",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "LFO DEPTH",
+    "selector": "X mod",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "OSCS - MIXER",
+    "legend": "SYNC",
+    "selector": "X mod",
+    "physical": "Button"
   },
   {
     "section": "FILTERS",
@@ -506,23 +540,27 @@
     "physical": "Pot"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "ATTACK",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "DECAY",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "SUSTAIN",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "RELEASE",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
@@ -550,31 +588,31 @@
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "DEST",
     "selector": "Mod",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "GATE",
     "selector": "Mod",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F1",
     "selector": "Mod",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F2",
     "selector": "Mod",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F3",
     "selector": "Mod",
     "physical": "Button"
@@ -596,20 +634,28 @@
     "legend": ""
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "MOD ENV",
+    "legend": "ATTACK",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "MOD ENV",
+    "legend": "DECAY",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "MOD ENV",
+    "legend": "SUSTAIN",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "MOD ENV",
+    "legend": "RELEASE",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
     "section": "AMP ENV",
@@ -636,31 +682,31 @@
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "DEST",
     "selector": "Env 3",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "GATE",
     "selector": "Env 3",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F1",
     "selector": "Env 3",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F2",
     "selector": "Env 3",
     "physical": "Button"
   },
   {
-    "section": "MOD ENV / ENV 3",
+    "section": "MOD ENV",
     "legend": "F3",
     "selector": "Env 3",
     "physical": "Button"
@@ -668,6 +714,7 @@
   {
     "section": "VELOCITY",
     "legend": "VELOCITY",
+    "selector": "Amp",
     "physical": "Pot"
   },
   {
@@ -683,8 +730,10 @@
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "VELOCITY",
+    "legend": "VELOCITY",
+    "selector": "Mod",
+    "physical": "Pot"
   },
   {
     "section": "VELOCITY",
@@ -699,8 +748,10 @@
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "VELOCITY",
+    "legend": "VELOCITY",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
     "section": "VELOCITY",
@@ -766,21 +817,23 @@
   },
   {
     "section": "TOUCHPAD",
-    "legend": "X",
+    "legend": "X1",
     "physical": "Pot"
   },
   {
     "section": "TOUCHPAD",
-    "legend": "Y",
+    "legend": "Y1",
     "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "TOUCHPAD",
+    "legend": "X2",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "TOUCHPAD",
+    "legend": "Y2",
+    "physical": "Pot"
   },
   {
     "section": "TRANSPORT",
