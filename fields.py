@@ -5,16 +5,16 @@ from bitstring import Bits
 class RawBytes():
     DEFAULTS = {
         "name": None,
-        "ms_name": None,
-        "ls_name": None,
+        "stuffed": None,
         "aliases": (),
         "valid_values": (),
     }
 
     @classmethod
     def get_name(cls):
-        if cls.DEFAULTS['ms_name'] and cls.DEFAULTS['ls_name']:
-            return '%s|%s' % (cls.DEFAULTS['ms_name'], cls.DEFAULTS['ls_name'])
+        if cls.DEFAULTS['stuffed']:
+            name = '|'.join((x[0] for x in cls.DEFAULTS["stuffed"]))
+            return name
         return cls.DEFAULTS['name']
 
     @classmethod
@@ -50,11 +50,11 @@ class RawBytes():
                 raise Exception('parsing should return a bytearray but got %s %s' % (self.bytes, type(self.bytes)))
 
         self.name = name if name is not None else type(self).DEFAULTS['name']
-        for argname in ['ms_name', 'ls_name', 'valid_values', 'aliases']:
+        for argname in ['stuffed', 'valid_values', 'aliases']:
             setattr(self, argname, kwargs[argname] if argname in kwargs else type(self).DEFAULTS[argname])
 
-        if self.ms_name and self.ls_name:
-            self.name = '%s|%s' % (self.ms_name, self.ls_name)
+        if self.stuffed:
+            self.name = '|'.join((x[0] for x in self.stuffed))
 
         if len(self.valid_values) > 0:
             for byte in self.bytes:

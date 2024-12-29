@@ -42,14 +42,14 @@ CONTROL_FIELDS = [
     define_field(NumericValue, name="Type", aliases=['Control Type']),
     define_field(NumericValue, name="Low", aliases=['Template', 'Velocity', 'MMC Command']),
     define_field(NumericValue, name="High"),
-    define_field(BitMap, ms_name='Ports', ls_name='Button'),
+    define_field(BitMap, stuffed=(['Ports', 4], ['Button', 4])),
     define_field(NumericValue, name='Pot', aliases=['Pot / Slider Control Type']),
     define_field(NumericValue, name='Display', aliases=['Display type']),
     define_field(NumericValue, name='MSBank', aliases=['NRPN MSBank Num']),
     define_field(NumericValue, name='CC', aliases=['Note']),
-    define_field(NumericValue, name='Ch', aliases=['Channel', 'Device id']),
+    define_field(NumericValue, name='Channel', aliases=['Channel', 'Device id']),
     define_field(NumericValue, name='Default', aliases=['Template', 'Velocity', 'MMC Command']),
-    define_field(NumericValue, name='N/A 1'),
+    define_field(NumericValue, name='HasSysex'),
     define_field(NumericValue, name='N/A 2'),
     define_field(NumericValue, name='N/A 3'),
     Sysex,
@@ -61,11 +61,11 @@ CONTROL_TEMPLATE_FIELDS = [
     define_field(NumericValue, name="Type", aliases=['Control Type']),
     define_field(NumericValue, name="Low", aliases=['Template', 'Velocity', 'MMC Command']),
     define_field(NumericValue, name="High"),
-    define_field(BitMap, ms_name='Ports', ls_name='Button'),
+    define_field(BitMap, stuffed=(['Ports', 4], ['Button', 4])),
     define_field(NumericValue, name='Pot', aliases=['Pot / Slider Control Type']),
     define_field(NumericValue, name='Display', aliases=['Display type']),
     define_field(NumericValue, name='MSBank', aliases=['NRPN MSBank Num']),
-    define_field(NumericValue, name='N/A 1'),
+    define_field(NumericValue, name='HasSysex'),
     define_field(NumericValue, name='N/A 2'),
     define_field(NumericValue, name='N/A 3'),
     Sysex,
@@ -87,7 +87,7 @@ TEMPLATE_FIELDS = [
     define_field(SelectValue, name='Velocity curve', valid_values=[0, 1, 2, 3]),
     define_field(SelectValue, name='Select 2', valid_values=[4, 5]),
     define_field(SelectValue, name='Aftertouch | Auto Snapshot | Not Synth', valid_values=[0, 1, 2, 3, 4, 5, 6, 7]),
-    define_field(NumericValue, name='Override MIDI Ch'),
+    define_field(NumericValue, name='Override MIDI Channel'),
     define_field(SelectValue, name='Touchpad X Type', valid_values=[0, 1, 2]),
     define_field(SelectValue, name='Touchpad Y Type', valid_values=[0, 1, 2]),
     Pad2,
@@ -182,32 +182,34 @@ TEMPLATE_FIELDS = [
     define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
     Pad3,
     define_field(SelectValue, name='Select 19', valid_values=[0, 1]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 1]),
-    define_field(SelectValue, name='Midi port', valid_values=[0, 112]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 2]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 56]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 60, 127]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 7]),
+    define_field(SelectValue, name='Enable Keyboard Zones', valid_values=[0, 1]),
+    define_field(NumericValue, name='Zone 1 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 1 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 1 - Bottom Note'),
+    define_field(NumericValue, name='Zone 1 - Top Note'),
+    define_field(NumericValue, name='Zone 1 - Transpose'),
+    define_field(NumericValue, name='Zone 1 - Aftertouch | Pitch Bend | Mod Wheel'),
     Pad4,
-    define_field(SelectValue, name='Midi port', valid_values=[0, 112]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 2]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 69]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 72, 127]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 7]),
-    Pad5,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 2]),
-    Pad1,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 127]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 7]),
-    Pad5,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 2]),
-    Pad1,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 127]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 7]),
+    define_field(NumericValue, name='Zone 2 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 2 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 2 - Bottom Note'),
+    define_field(NumericValue, name='Zone 2 - Top Note'),
+    define_field(NumericValue, name='Zone 2 - Transpose'),
+    define_field(NumericValue, name='Zone 2 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    define_field(NumericValue, name='Zone 3 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 3 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 3 - Bottom Note'),
+    define_field(NumericValue, name='Zone 3 - Top Note'),
+    define_field(NumericValue, name='Zone 3 - Transpose'),
+    define_field(NumericValue, name='Zone 3 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    define_field(NumericValue, name='Zone 4 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 4 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 4 - Bottom Note'),
+    define_field(NumericValue, name='Zone 4 - Top Note'),
+    define_field(NumericValue, name='Zone 4 - Transpose'),
+    define_field(NumericValue, name='Zone 4 - Aftertouch | Pitch Bend | Mod Wheel'),
     Pad170,
 ]
 
@@ -322,7 +324,7 @@ class SingleControl(FieldSet):
           "source": {
             **REALEARN_CONTROL_SOURCE_COMMON,
             "character": 1 if get_control_physical(idx) == 'Button' else 0,
-            "channel": int(str(self['Ch'])),
+            "channel": int(str(self['Channel'])),
             "number": int(str(self['CC'])),
           },
           "mode": {
@@ -433,11 +435,14 @@ class Template():
         if len(full_header) != 396:
             raise Exception('bad header bytes length')
 
+        header_fields = []
+        for idx, ct in enumerate(TEMPLATE_FIELDS):
+            print(idx + 77)
+            field = ct._pop_from(full_header)
+            header_fields.append(field)
+
         instance = cls(
-            header_fields=[
-                ct._pop_from(full_header)
-                for ct in TEMPLATE_FIELDS
-            ],
+            header_fields=header_fields,
             controls = [
                 SingleControl.from_bytes(bytearray(controls_bytes[i:i + cls.LINE_SIZE]), index=idx)
                 for idx, i in enumerate(range(0, len(controls_bytes), cls.LINE_SIZE))
@@ -572,15 +577,17 @@ class Template():
         field_diffs = []
 
         other_headers = other.header_fields
-        for idx, control in enumerate(self.header_fields):
-            if control != other_headers[idx]:
-                template_diffs.append([idx, control, other_headers[idx]])
+        for idx, field in enumerate(self.header_fields):
+            if field != other_headers[idx]:
+                template_diffs.append([idx, field, str(field), other_headers[idx], str(other_headers[idx])])
 
         other_controls = other.controls
         for idx, control in enumerate(self.controls):
             for field_idx, field in enumerate(control.fields):
                 other_field = other_controls[idx].fields[field_idx]
                 if field != other_field:
+                    print(control)
+                    print(other_controls[idx])
                     field_diffs.append([idx, field_idx, field.name, str(field), str(other_field)])
 
         print('TEMPLATE DIFFS', template_diffs)
