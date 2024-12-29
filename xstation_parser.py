@@ -35,7 +35,7 @@ Pad5 = define_field(ZeroPadding, num_bytes=5, name="Zeros")
 Pad6 = define_field(ZeroPadding, num_bytes=6, name="Zeros")
 Pad7 = define_field(ZeroPadding, num_bytes=7, name="Zeros")
 Pad8 = define_field(ZeroPadding, num_bytes=8, name="Zeros")
-Pad170 = define_field(ZeroPadding, num_bytes=170, name="Zeros")
+Pad166 = define_field(ZeroPadding, num_bytes=166, name="Zeros")
 
 CONTROL_FIELDS = [
     ControlName,
@@ -72,6 +72,20 @@ CONTROL_TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Step'),
     Pad4,
 ]
+
+def get_fields_of_keyboard_zone(zone_idx):
+    return [
+        define_field(NumericValue, name='Zone %s - Midi Channel | Midi ports' % zone_idx),
+        define_field(NumericValue, name='Zone %s - Velocity Offset' % zone_idx),
+        define_field(NumericValue, name='Zone %s - Bottom Note' % zone_idx),
+        define_field(NumericValue, name='Zone %s - Top Note' % zone_idx),
+        define_field(NumericValue, name='Zone %s - Transpose' % zone_idx),
+        define_field(NumericValue, name='Zone %s - Aftertouch | Pitch Bend | Mod Wheel' % zone_idx),
+        define_field(ZeroPadding, num_bytes=4, name="Zone %s padding" % zone_idx)
+    ]
+
+def get_fields_of_all_keyboard_zones():
+    return [field for zone in range(1, 5) for field in get_fields_of_keyboard_zone(zone)]
 
 TEMPLATE_FIELDS = [
     define_field(SelectValue, name='N/A 1', valid_values=[8, 17, 19, 24, 25]),
@@ -195,35 +209,7 @@ TEMPLATE_FIELDS = [
     Pad3,
     define_field(SelectValue, name='Select 19', valid_values=[0, 1]),
     define_field(SelectValue, name='Enable Keyboard Zones', valid_values=[0, 1]),
-    define_field(NumericValue, name='Zone 1 - Midi Channel | Midi ports'),
-    define_field(NumericValue, name='Zone 1 - Velocity Offset'),
-    define_field(NumericValue, name='Zone 1 - Bottom Note'),
-    define_field(NumericValue, name='Zone 1 - Top Note'),
-    define_field(NumericValue, name='Zone 1 - Transpose'),
-    define_field(NumericValue, name='Zone 1 - Aftertouch | Pitch Bend | Mod Wheel'),
-    Pad4,
-    define_field(NumericValue, name='Zone 2 - Midi Channel | Midi ports'),
-    define_field(NumericValue, name='Zone 2 - Velocity Offset'),
-    define_field(NumericValue, name='Zone 2 - Bottom Note'),
-    define_field(NumericValue, name='Zone 2 - Top Note'),
-    define_field(NumericValue, name='Zone 2 - Transpose'),
-    define_field(NumericValue, name='Zone 2 - Aftertouch | Pitch Bend | Mod Wheel'),
-    Pad4,
-    define_field(NumericValue, name='Zone 3 - Midi Channel | Midi ports'),
-    define_field(NumericValue, name='Zone 3 - Velocity Offset'),
-    define_field(NumericValue, name='Zone 3 - Bottom Note'),
-    define_field(NumericValue, name='Zone 3 - Top Note'),
-    define_field(NumericValue, name='Zone 3 - Transpose'),
-    define_field(NumericValue, name='Zone 3 - Aftertouch | Pitch Bend | Mod Wheel'),
-    Pad4,
-    define_field(NumericValue, name='Zone 4 - Midi Channel | Midi ports'),
-    define_field(NumericValue, name='Zone 4 - Velocity Offset'),
-    define_field(NumericValue, name='Zone 4 - Bottom Note'),
-    define_field(NumericValue, name='Zone 4 - Top Note'),
-    define_field(NumericValue, name='Zone 4 - Transpose'),
-    define_field(NumericValue, name='Zone 4 - Aftertouch | Pitch Bend | Mod Wheel'),
-    define_field(ZeroPadding, num_bytes=170, name="Zeros"),
-]
+] + get_fields_of_all_keyboard_zones() + [Pad166]
 
 
 REALEARN_TARGET_DUMMY = {
