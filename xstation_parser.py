@@ -73,20 +73,6 @@ CONTROL_TEMPLATE_FIELDS = [
     Pad4,
 ]
 
-def get_fields_of_keyboard_zone(zone_idx):
-    return [
-        define_field(NumericValue, name='Zone %s - Midi Channel | Midi ports' % zone_idx),
-        define_field(NumericValue, name='Zone %s - Velocity Offset' % zone_idx),
-        define_field(NumericValue, name='Zone %s - Bottom Note' % zone_idx),
-        define_field(NumericValue, name='Zone %s - Top Note' % zone_idx),
-        define_field(NumericValue, name='Zone %s - Transpose' % zone_idx),
-        define_field(NumericValue, name='Zone %s - Aftertouch | Pitch Bend | Mod Wheel' % zone_idx),
-        define_field(ZeroPadding, num_bytes=4, name="Zone %s padding" % zone_idx)
-    ]
-
-def get_fields_of_all_keyboard_zones():
-    return [field for zone in range(1, 5) for field in get_fields_of_keyboard_zone(zone)]
-
 TEMPLATE_FIELDS = [
     define_field(SelectValue, name='N/A 1', valid_values=[8, 17, 19, 24, 25]),
     define_field(SelectValue, name='N/A 2', valid_values=[1, 2, 3, 10]),
@@ -117,7 +103,7 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Stereo Gain'),
     define_field(NumericValue, name='Stereo Width'),
     Pad3,
-    define_field(SelectValue, name='Select 12', valid_values=[0,1]),
+    define_field(SelectValue, name='Select 12', valid_values=[0,1,64]),
     define_field(NumericValue, name='Input 1 - Delay - Level'),
     define_field(NumericValue, name='Input 1 - Delay - Decay time'),
     define_field(NumericValue, name='Input 1 - Delay - Feedback'),
@@ -140,10 +126,10 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 1 - Compress - Threshold'),
     define_field(NumericValue, name='Input 1 - Compress - Attack'),
     define_field(NumericValue, name='Input 1 - Compress - Release'),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 32]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 3, 32]),
     Pad1,
     define_field(NumericValue, name='Input 1 - Compress - Auto Gain'),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 3, 64]),
     Pad1,
     define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
     Pad2,
@@ -155,10 +141,10 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 1 - EQ - High'),
     define_field(NumericValue, name='Input 1 - EQ - Mid'),
     define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 64, 127]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 2, 64]),
     Pad6,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 4, 64]),
     Pad3,
     define_field(NumericValue, name='Input 2 - Delay - Level'),
     define_field(NumericValue, name='Input 2 - Delay - Decay time'),
@@ -178,15 +164,15 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 2 - Chorus - Rate'),
     define_field(NumericValue, name='Input 2 - Chorus - Mod Depth'),
     define_field(NumericValue, name='Input 2 - Chorus - Mod Centre'),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64, 74]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 1, 64, 74]),
     Pad1,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 2, 64]),
     Pad2,
     define_field(NumericValue, name='Input 2 - Compress - Ratio'),
     define_field(NumericValue, name='Input 2 - Compress - Threshold'),
     define_field(NumericValue, name='Input 2 - Compress - Attack'),
     define_field(NumericValue, name='Input 2 - Compress - Release'),
-    define_field(SelectValue, name='Select 19', valid_values=[0,32]),
+    define_field(SelectValue, name='Select 19', valid_values=[0,32,64]),
     Pad1,
     define_field(NumericValue, name='Input 2 - Compress - Auto Gain'),
     define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
@@ -202,14 +188,43 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 2 - EQ - High'),
     define_field(NumericValue, name='Input 2 - EQ - Mid'),
     define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 7, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 4, 64]),
     Pad6,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 64]),
+    define_field(SelectValue, name='Select 19', valid_values=[0, 2, 64]),
     Pad3,
-    define_field(SelectValue, name='Select 19', valid_values=[0, 1]),
-    define_field(SelectValue, name='Enable Keyboard Zones', valid_values=[0, 1]),
-] + get_fields_of_all_keyboard_zones() + [Pad166]
+    define_field(SelectValue, name='Select 19', valid_values=[0, 1, 127]),
+    define_field(SelectValue, name='Enable Keyboard Zones', valid_values=[0, 1, 64]),
+    define_field(NumericValue, name='Zone 1 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 1 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 1 - Bottom Note'),
+    define_field(NumericValue, name='Zone 1 - Top Note'),
+    define_field(NumericValue, name='Zone 1 - Transpose'),
+    define_field(NumericValue, name='Zone 1 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    define_field(NumericValue, name='Zone 2 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 2 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 2 - Bottom Note'),
+    define_field(NumericValue, name='Zone 2 - Top Note'),
+    define_field(NumericValue, name='Zone 2 - Transpose'),
+    define_field(NumericValue, name='Zone 2 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    define_field(NumericValue, name='Zone 3 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 3 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 3 - Bottom Note'),
+    define_field(NumericValue, name='Zone 3 - Top Note'),
+    define_field(NumericValue, name='Zone 3 - Transpose'),
+    define_field(NumericValue, name='Zone 3 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    define_field(NumericValue, name='Zone 4 - Midi Channel | Midi ports'),
+    define_field(NumericValue, name='Zone 4 - Velocity Offset'),
+    define_field(NumericValue, name='Zone 4 - Bottom Note'),
+    define_field(NumericValue, name='Zone 4 - Top Note'),
+    define_field(NumericValue, name='Zone 4 - Transpose'),
+    define_field(NumericValue, name='Zone 4 - Aftertouch | Pitch Bend | Mod Wheel'),
+    Pad4,
+    Pad166,
+]
 
 
 REALEARN_TARGET_DUMMY = {
@@ -278,11 +293,6 @@ class SingleControl(FieldSet):
     @classmethod
     def from_values(cls, *args, **kwargs):
         return super(SingleControl, cls).from_values(CONTROL_FIELDS, *args, **kwargs)
-
-    @classmethod
-    def from_spreadsheet(cls, idx, row):
-        (legend, template, *values) = (c.value for c in row)
-        return super(SingleControl, cls).from_values(CONTROL_FIELDS, values, index=idx)
 
     def __init__(self, fields, index):
         super().__init__(fields)
@@ -396,24 +406,6 @@ class Template():
     def unknowns(self):
         return [x for x in self.controls if x.section == '']
 
-    def diff_headers(self, other):
-        for idx, header in enumerate(self.header_fields):
-            other_header = other.header_fields[idx]
-            for byte_index, byte in enumerate(header.bytes):
-                if byte != other_header.bytes[byte_index]:
-                    print('-', idx + 1, header.name, header,'---->', other_header)
-                    break
-
-    def compare_unknowns(self, other):
-        other_unknowns = other.controls
-        for idx, control in enumerate(self.controls):
-            other_control = other_unknowns[idx]
-            for field_index, field in enumerate(control.fields):
-                if field.name not in ('Name', 'Ch', 'CC', 'Display', 'Type', 'Pot'): # 'Name', 'Low', 'High', 'Ch', 'MSBank', 'Sysex'):
-                    other_field = other_control.fields[field_index]
-                    if field != other_field:
-                        print(control.index + 2, control.legend, field.name, str(field), '---->', str(other_field))
-
     @classmethod
     def from_sysex(cls, filename):
         with open(filename, "rb") as f:
@@ -434,8 +426,7 @@ class Template():
             raise Exception('bad header bytes length')
 
         header_fields = []
-        for idx, ct in enumerate(TEMPLATE_FIELDS):
-            print(idx + 77)
+        for _, ct in enumerate(TEMPLATE_FIELDS):
             field = ct._pop_from(full_header)
             header_fields.append(field)
 
@@ -461,14 +452,37 @@ class Template():
             f.write(self.bytes)
 
     @classmethod
-    def from_spreadsheet(cls, filename):
-        wb = load_workbook(filename=filename, data_only=True)
-        ws = wb['Template configuration']
-        header_fields = [TEMPLATE_FIELDS[idx](row[1].value if row[1].value is not None else "") for idx, row in enumerate(ws.rows)]
+    def _from_workbook(cls, workbook):
+        ws = workbook['Template configuration']
+        header_fields = []
+        for idx, row in enumerate(ws.rows):
+            field = TEMPLATE_FIELDS[idx](row[1].value if row[1].value is not None else "")
+            header_fields.append(field)
 
-        ws = wb['Controls']
-        controls = [SingleControl.from_spreadsheet(idx - 1, row) for idx, row in enumerate(ws.rows) if idx > 0]
+        wst = workbook['Templates']
+        templates = {}
+        for idx, row in enumerate(wst.rows):
+            if idx == 0:
+                continue
+            (name, *template_values) = (c.value for c in row)
+            templates[name] = FieldSet.from_values(CONTROL_TEMPLATE_FIELDS, template_values, name=name)
+
+        ws = workbook['Controls']
+        controls = []
+        for idx, row in enumerate(ws.rows):
+            if idx == 0:
+                continue
+            (legend, template_name, *values) = (c.value for c in row)
+            template = templates[template_name]
+            print(values)
+            flat_values = template.dereference(values)
+            controls.append(SingleControl.from_values(flat_values, index=idx - 1))
         return cls(header_fields, controls)
+
+    @classmethod
+    def from_spreadsheet(cls, filename):
+        wb = load_workbook(filename=filename)
+        return cls._from_workbook(wb)
 
     @staticmethod
     def extract_templates(controls):
@@ -523,7 +537,11 @@ class Template():
             control.to_spreadsheet(ws, idx + 2, found_template.name)
 
         wb.save(filename)
+        stored = Template._from_workbook(wb)
         wb.close()
+
+        if self.bytes != stored.bytes:
+            raise Exception('template could not be stored properly')
 
     def to_json(self, filename):
         id = self.name

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 import string
 from bitstring import Bits
 
@@ -238,6 +239,19 @@ class FieldSet():
                 raise Exception('value is required')
             ws.cell(row=row_number, column=idx + 2, value=value)
         ws.cell(row=row_number, column=len(self.fields) + 2, value=self.bytes.hex())
+
+    def dereference(self, values):
+        flat_values = []
+        for value in values:
+            if value is None:
+                flat_values.append("")
+            elif value.startswith("="):
+                match = re.search('\$[A-Z]\$\d+:\$[A-Z]\$\d+,(?P<index>\d+),', value)
+                field_index = int(match.group('index')) - 2
+                flat_values.append(str(self.fields[field_index]))
+            else:
+                flat_values.append(value)
+        return flat_values
 
 
 class ControlSet():
