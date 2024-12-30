@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
 
@@ -111,9 +112,11 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 2 - Pan'),
     Pad1,
     define_field(NumericValue, name='Input 2 - Bypass Effects'),
-    define_field(NumericValue, name='Stereo Gain'),
-    define_field(NumericValue, name='Stereo Width'),
-    Pad3,
+    define_field(NumericValue, name='Stereo - Gain'),
+    define_field(NumericValue, name='Stereo - Width'),
+    Pad1,
+    define_field(NumericValue, name='Stereo - Bypass Effects'),
+    Pad1,
     define_field(SelectValue, name='Select 12', valid_values=[0,1,64]),
     define_field(NumericValue, name='Input 1 - Delay - Level'),
     define_field(NumericValue, name='Input 1 - Delay - Decay time'),
@@ -284,7 +287,7 @@ REALEARN_CONTROL_TARGET_COMMON = {
     }
 }
 
-KNOWN_TEMPLATES = {
+KNOWN_TEMPLATES = [FieldSet.from_csv(CONTROL_TEMPLATE_FIELDS, csv, name=name) for name, csv in ({
     "Trigger": "1,127,0,01110000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Toggle": "1,0,127,01111000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Momentary": "1,0,127,01110100,0,0,0,0,0,0,000000000000000000000000000000000000,0,4",
@@ -294,7 +297,28 @@ KNOWN_TEMPLATES = {
     "Jog": "1,63,65,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Pitch": "10,0,127,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
     "-": "0,0,127,01110000,0,64,0,0,0,0,000000000000000000000000000000000000,0,4",
-}
+}).items()]
+
+def extract_templates(controls, definition, known):
+    permutations = {bytes(t.get_subset(definition).bytes) for t in controls}
+    templates = []
+    for idx, x in enumerate(permutations):
+        name = 'template%s' % idx
+        template = FieldSet.from_bytes(definition, bytearray(x), name)
+        match = next((x for x in known if x == template), None)
+        if match:
+            template.name = match.name
+        template.add_labels(Name=template.name)
+        templates.append(template)
+    templates.sort(key=lambda t: t.bytes)
+    return templates
+
+def create_worksheet(workbook, sheet_name, values_table):
+    workbook.create_sheet(sheet_name)
+    wst = workbook[sheet_name]
+    for row_idx, row_values in enumerate(values_table):
+        for col_idx, value in enumerate(row_values):
+            wst.cell(row=row_idx + 1, column=col_idx + 1, value=value)
 
 class SingleControl(FieldSet):
     @classmethod
@@ -437,7 +461,8 @@ class Template():
             raise Exception('bad header bytes length')
 
         header_fields = []
-        for _, ct in enumerate(TEMPLATE_FIELDS):
+        for idx, ct in enumerate(TEMPLATE_FIELDS):
+            print(idx + 88)
             field = ct._pop_from(full_header)
             header_fields.append(field)
 
@@ -499,34 +524,9 @@ class Template():
         _assert_workbook_sheets_are_same(wb['Controls'], parsed['Controls'], ignore_columns=(1, 2))
         return template
 
-    @staticmethod
-    def extract_templates(controls):
-        permutations = {bytes(t.get_subset(CONTROL_TEMPLATE_FIELDS).bytes) for t in controls}
-        known = [FieldSet.from_csv(CONTROL_TEMPLATE_FIELDS, csv, name=name) for name, csv in KNOWN_TEMPLATES.items()]
-        templates = []
-        for idx, x in enumerate(permutations):
-            name = 'template%s' % idx
-            template = FieldSet.from_bytes(CONTROL_TEMPLATE_FIELDS, bytearray(x), name)
-            match = next((x for x in known if x == template), None)
-            if match:
-                template.name = match.name
-            templates.append(template)
-        templates.sort(key=lambda t: t.bytes)
-        return templates
-
-    def __templates_to_spreadsheet(self, wb):
-        wb.create_sheet("Templates")
-        wst = wb['Templates']
-        for idx, field in enumerate(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields):
-            wst.cell(row=1, column=idx + 2, value=field.name)
-        wst.cell(row=1, column=len(self.controls[0].get_subset(CONTROL_TEMPLATE_FIELDS).fields) + 2, value='Bytes')
-        templates = self.extract_templates(self.controls)
-        for idx, template in enumerate(templates):
-            template.to_spreadsheet(wst, idx + 2)
-            print(template)
-        return templates
-
     def _to_workbook(self):
+        templates = extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
+
         wb = Workbook()
         ws = wb.active
         ws.title = "Template configuration"
@@ -535,14 +535,19 @@ class Template():
             ws.cell(row=idx+1, column=1, value=field.name)
             ws.cell(row=idx+1, column=2, value=str(field))
 
-        templates = self.__templates_to_spreadsheet(wb)
+        for template in templates:
+            print(template)
+
+        create_worksheet(wb, "Templates", FieldSet.get_table(templates, with_labels=True))
 
         wb.create_sheet("Controls")
         ws = wb['Controls']
         ws.cell(row=1, column=1, value='Legend')
         ws.cell(row=1, column=2, value='Template')
         for idx, name in enumerate(self.controls[0].get_field_names()):
-            ws.cell(row=1, column=idx + 3, value=name)
+            cell = ws.cell(row=1, column=idx + 3, value=name)
+            cell.font = Font(b=True)
+            cell.fill = PatternFill("solid", fgColor="FF0000")
 
         for idx, control in enumerate(self.controls):
             found_template = next((x for x in templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None)
@@ -586,7 +591,7 @@ class Template():
         return [control.get_values() for control in self.controls]
 
     def to_sql(self):
-        templates = self.extract_templates(self.controls)
+        templates = self.extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
 
         values = [
             [

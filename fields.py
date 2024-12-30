@@ -173,9 +173,14 @@ class FieldSet():
             raise Exception('non parsed fields')
         return cls(fields, *args, **kwargs)
 
+    @classmethod
+    def get_table(cls, fieldsets, with_labels=False):
+        return [fieldsets[0].get_headers(with_labels)] + [t.get_values(with_labels) for t in fieldsets]
+
     def __init__(self, fields, name=None):
         self._name = name
         self.fields = fields
+        self.labels = []
 
     @property
     def name(self):
@@ -221,8 +226,20 @@ class FieldSet():
                 return idx
         return None
 
-    def get_values(self):
-        values = ([str(f) for f in self.fields])
+    def add_labels(self, **kwargs):
+        for key, value in kwargs.items():
+            self.labels.append((key, value))
+
+    def get_headers(self, with_labels=False):
+        return ([key for key, _ in self.labels] if with_labels else []) + [f.name for f in self.fields]
+
+    def get_values(self, with_labels=False):
+        values = [value for _, value in self.labels] if with_labels else []
+        for field in self.fields:
+            value = str(field)
+            if value is None:
+                raise Exception('value is required')
+            values.append(value)
         return values
 
     def get_subset(self, subset_definitions):
@@ -232,15 +249,6 @@ class FieldSet():
             values.append(str(self[name]))
 
         return FieldSet.from_values(subset_definitions, values)
-
-    def to_spreadsheet(self, ws, row_number):
-        ws.cell(row=row_number, column=1, value=self.name.strip())
-        for idx, field in enumerate(self.fields):
-            value = str(field)
-            if value is None:
-                raise Exception('value is required')
-            ws.cell(row=row_number, column=idx + 2, value=value)
-        ws.cell(row=row_number, column=len(self.fields) + 2, value=self.bytes.hex())
 
     def dereference(self, values):
         flat_values = []
