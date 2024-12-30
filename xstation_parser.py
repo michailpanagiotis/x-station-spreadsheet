@@ -313,7 +313,7 @@ def extract_templates(controls, definition, known):
     templates.sort(key=lambda t: t.bytes)
     return templates
 
-def replace_with_references(values_table, references_table, from_column, to_column, ignore_headers=["Name"]):
+def replace_with_references(values_table, references_table, from_column, to_column, ignore_headers):
     reference_headers = references_table[0]
     headers = values_table[0]
 
@@ -330,7 +330,7 @@ def replace_with_references(values_table, references_table, from_column, to_colu
             with_references.append(row)
         else:
             row_with_references = [
-                '=IFERROR(VLOOKUP($B%s,$Templates!$A$2:$P$1001,%s,0), "")' % (row_idx + 1, pointers[col_idx]) if col_idx in pointers else x
+                '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_idx + 1, pointers[col_idx]) if col_idx in pointers else x
                 for col_idx, x in enumerate(row)
             ]
             with_references.append(row_with_references)
@@ -359,19 +359,6 @@ class SingleControl(FieldSet):
 
     def get_template(self):
         return self.get_subset(CONTROL_TEMPLATE_FIELDS)
-
-    def to_spreadsheet(self, ws, row_number, template_name):
-        ws.cell(row=row_number, column=1, value=get_control_legend(row_number - 2))
-        ws.cell(row=row_number, column=2, value=template_name)
-
-        template = self.get_subset(CONTROL_TEMPLATE_FIELDS)
-
-        for idx, field in enumerate(self.fields):
-            pos = template.find_index(field.name)
-            value = '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_number, pos + 2) if pos is not None else str(field)
-            if value is None:
-                raise Exception('value is required')
-            ws.cell(row=row_number, column=idx + 3, value=value)
 
     def get_references(self, other_fieldset_definition=CONTROL_TEMPLATE_FIELDS):
         other_fields = self.get_subset(CONTROL_TEMPLATE_FIELDS)
@@ -574,23 +561,8 @@ class Template():
         create_worksheet(wb, "Templates", templates_table)
 
         controls_table = FieldSet.get_table(self.controls, with_labels=True)
-        replace_with_references(controls_table, templates_table, from_column=2, to_column=1)
-        print(controls_table[0:3])
-
-        wb.create_sheet("Controls")
-        ws = wb['Controls']
-        ws.cell(row=1, column=1, value='Legend')
-        ws.cell(row=1, column=2, value='Template')
-        for idx, name in enumerate(self.controls[0].get_field_names()):
-            ws.cell(row=1, column=idx + 3, value=name)
-
-        for idx, control in enumerate(self.controls):
-            found_template = next((x for x in templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None)
-
-            if not found_template:
-                raise Exception('unknown template')
-
-            control.to_spreadsheet(ws, idx + 2, found_template.name)
+        c_with_refs = replace_with_references(controls_table, templates_table, from_column=2, to_column=1, ignore_headers=["Name"])
+        create_worksheet(wb, "Controls", c_with_refs)
 
         return wb
 
