@@ -311,6 +311,8 @@ def extract_templates(controls, definition, known):
         template.add_labels(Name=template.name)
         templates.append(template)
     templates.sort(key=lambda t: t.bytes)
+    # for template in templates:
+    #     print(template)
     return templates
 
 def replace_with_references(values_table, references_table, from_column, to_column, ignore_headers):
@@ -553,9 +555,6 @@ class Template():
         for idx, field in enumerate(self.header_fields):
             ws.cell(row=idx+1, column=1, value=field.name)
             ws.cell(row=idx+1, column=2, value=str(field))
-
-        for template in templates:
-            print(template)
 
         templates_table = FieldSet.get_table(templates, with_labels=True)
         create_worksheet(wb, "Templates", templates_table)
