@@ -4,6 +4,11 @@ from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
 
+NUM_TEMPLATE_CONFIGURATION_BYTES = 396
+MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
+MESSAGE_END=b'\x124\xf7'
+CONTROL_LINE_SIZE = 52
+
 with open('x-station-indices.json', 'r') as f:
     indices = json.loads(f.read())
 
@@ -34,6 +39,11 @@ def _assert_workbook_sheets_are_same(ws1, ws2, ignore_columns=(1,)):
             other_value = other_cell.value if other_cell.value is not None else ""
             if cell_value != other_value:
                 raise Exception('difference at cell %s (%s != %s)' % (cell, cell.value, other_cell.value))
+
+def _assert_bytes_are_same(bytes1, bytes2):
+    for idx, byte in enumerate(bytes1):
+        if byte != bytes2[idx]:
+            raise Exception('bad serializing %s %s' % (byte, bytes2[idx]))
 
 Sysex = define_field(NumericArray, num_bytes=18, name="Sysex")
 ControlName = define_field(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
@@ -299,6 +309,22 @@ KNOWN_TEMPLATES = [FieldSet.from_csv(CONTROL_TEMPLATE_FIELDS, csv, name=name) fo
     "-": "0,0,127,01110000,0,64,0,0,0,0,000000000000000000000000000000000000,0,4",
 }).items()]
 
+def split_sysex(sysex):
+    if sysex[:len(MESSAGE_START)] != MESSAGE_START:
+        raise Exception('bad header')
+
+    if sysex[-len(MESSAGE_END):] != MESSAGE_END:
+        raise Exception('bad footer')
+
+    template_configuration_bytes = bytearray(
+        sysex[len(MESSAGE_START):len(MESSAGE_START) + NUM_TEMPLATE_CONFIGURATION_BYTES],
+    ) # 396 bytes
+
+    controls_bytes = bytearray(
+        sysex[len(MESSAGE_START) + len(template_configuration_bytes):-len(MESSAGE_END)] )
+    # 52 x 149 = 7748 bytes
+    return template_configuration_bytes, controls_bytes
+
 def extract_templates(controls, definition, known):
     permutations = {bytes(t.get_subset(definition).bytes) for t in controls}
     templates = []
@@ -339,7 +365,7 @@ def replace_with_references(values_table, references_table, from_column, to_colu
     return with_references
 
 
-def create_worksheet(workbook, sheet_name, values_table):
+def create_sheet(workbook, sheet_name, values_table):
     workbook.create_sheet(sheet_name)
     wst = workbook[sheet_name]
     for row_idx, row_values in enumerate(values_table):
@@ -400,9 +426,6 @@ class SingleControl(FieldSet):
         return control
 
 class Template():
-    LINE_SIZE = 52
-    MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
-    MESSAGE_END=b'\x124\xf7'
 
     def __init__(self, header_fields, controls, sysex=None):
         self.header_fields = header_fields
@@ -419,12 +442,12 @@ class Template():
 
     @property
     def bytes(self):
-        bytes = bytearray(Template.MESSAGE_START)
-        for field in self.header_fields:
+        bytes = bytearray(MESSAGE_START)
+        for field in self.header_fields.fields:
             bytes.extend(field.bytes)
         for control in self.controls:
             bytes.extend(control.bytes)
-        bytes.extend(Template.MESSAGE_END)
+        bytes.extend(MESSAGE_END)
         return bytes
 
     def __getitem__(self, key):
@@ -467,41 +490,18 @@ class Template():
         with open(filename, "rb") as f:
             file_contents = f.read()
 
-        if file_contents[:len(Template.MESSAGE_START)] != Template.MESSAGE_START:
-            raise Exception('bad header')
-
-        if file_contents[-len(Template.MESSAGE_END):] != Template.MESSAGE_END:
-            raise Exception('bad footer')
-
-        body = file_contents[len(Template.MESSAGE_START):-len(Template.MESSAGE_END)]
-        offset = 405 - len(Template.MESSAGE_START)
-        full_header = bytearray(body[:offset]) # 396 bytes
-        controls_bytes = body[len(full_header):] # 52 x 149 = 7748 bytes
-
-        if len(full_header) != 396:
-            raise Exception('bad header bytes length')
-
-        header_fields = []
-        for idx, ct in enumerate(TEMPLATE_FIELDS):
-            print(idx + 88)
-            field = ct._pop_from(full_header)
-            header_fields.append(field)
+        template_configuration_bytes, controls_bytes = split_sysex(file_contents)
 
         instance = cls(
-            header_fields=header_fields,
+            header_fields=FieldSet.from_bytes(TEMPLATE_FIELDS, template_configuration_bytes),
             controls = [
-                SingleControl.from_bytes(bytearray(controls_bytes[i:i + cls.LINE_SIZE]), index=idx)
-                for idx, i in enumerate(range(0, len(controls_bytes), cls.LINE_SIZE))
+                SingleControl.from_bytes(bytearray(controls_bytes[i:i + CONTROL_LINE_SIZE]), index=idx)
+                for idx, i in enumerate(range(0, len(controls_bytes), CONTROL_LINE_SIZE))
             ],
-            sysex = body
+            sysex = file_contents
         )
 
-        bytes = instance.bytes
-
-        for idx, byte in enumerate(file_contents):
-            if byte != bytes[idx]:
-                raise Exception('bad serializing %s %s' % (byte, bytes[idx]))
-
+        _assert_bytes_are_same(file_contents, instance.bytes)
         return instance
 
     def to_sysex(self, file):
@@ -511,10 +511,7 @@ class Template():
     @classmethod
     def _from_workbook(cls, workbook):
         ws = workbook['Template configuration']
-        header_fields = []
-        for idx, row in enumerate(ws.rows):
-            field = TEMPLATE_FIELDS[idx](row[1].value if row[1].value is not None else "")
-            header_fields.append(field)
+        header_fields = FieldSet.from_values(TEMPLATE_FIELDS, [row[1].value for row in ws.rows])
 
         wst = workbook['Templates']
         templates = {}
@@ -549,19 +546,14 @@ class Template():
         templates = extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
 
         wb = Workbook()
-        ws = wb.active
-        ws.title = "Template configuration"
-
-        for idx, field in enumerate(self.header_fields):
-            ws.cell(row=idx+1, column=1, value=field.name)
-            ws.cell(row=idx+1, column=2, value=str(field))
+        create_sheet(wb, "Template configuration", list(zip(self.header_fields.get_headers(), self.header_fields.get_values())))
 
         templates_table = FieldSet.get_table(templates, with_labels=True)
-        create_worksheet(wb, "Templates", templates_table)
+        create_sheet(wb, "Templates", templates_table)
 
         controls_table = FieldSet.get_table(self.controls, with_labels=True)
         c_with_refs = replace_with_references(controls_table, templates_table, from_column=2, to_column=1, ignore_headers=["Name"])
-        create_worksheet(wb, "Controls", c_with_refs)
+        create_sheet(wb, "Controls", c_with_refs)
 
         return wb
 
