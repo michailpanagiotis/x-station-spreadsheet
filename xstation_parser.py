@@ -102,7 +102,7 @@ TEMPLATE_FIELDS = [
     Pad1,
     define_field(NumericValue, name='Template index'),
     define_field(TemplateName, name='Name'),
-    define_field(Unknown, name='Unknown', valid_values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]),
+    define_field(NumericValue, name='Internal index'),
     define_field(ManufacturerName, name='Manufacturer'),
     define_field(SelectValue, name='Channel', valid_values=[0, 16]),
     define_field(SelectValue, name='Midi port | Keyb MIDI Chan', valid_values=[0, 16, 48, 53, 54, 112]),
@@ -208,18 +208,18 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 2 - Distortion - Level'),
     define_field(NumericValue, name='Input 2 - Distortion - Compensate'),
     define_field(NumericValue, name='Input 2 - Distortion - Output Level'),
-    define_field(Unknown, name='Unknown', valid_values=[0, 64, 65]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 65]),
     Pad2,
     define_field(NumericValue, name='Input 2 - EQ - Low'),
     define_field(NumericValue, name='Input 2 - EQ - High'),
     define_field(NumericValue, name='Input 2 - EQ - Mid'),
-    define_field(Unknown, name='Unknown', valid_values=[0, 64]),
-    define_field(Unknown, name='Unknown', valid_values=[0, 7, 64]),
-    define_field(Unknown, name='Unknown', valid_values=[0, 4, 64]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 64]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 64]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 64]),
     Pad6,
-    define_field(Unknown, name='Unknown', valid_values=[0, 2, 64]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 64]),
     Pad3,
-    define_field(Unknown, name='Unknown', valid_values=[0, 1, 127]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 1]),
     define_field(SelectValue, name='Enable Keyboard Zones', valid_values=[0, 1, 64]),
     define_field(NumericValue, name='Zone 1 - Midi Channel | Midi ports'),
     define_field(NumericValue, name='Zone 1 - Velocity Offset'),
@@ -553,6 +553,8 @@ class Template():
         controls_table = FieldSet.get_table(self.controls, with_labels=True)
         c_with_refs = replace_with_references(controls_table, templates_table, from_column=2, to_column=1, ignore_headers=["Name"])
         create_sheet(wb, "Controls", c_with_refs)
+
+        del wb['Sheet']
 
         return wb
 
