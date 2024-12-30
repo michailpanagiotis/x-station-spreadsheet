@@ -100,20 +100,21 @@ TEMPLATE_FIELDS = [
     define_field(Unknown, name='Unknown', valid_values=[8, 17, 19, 24, 25]),
     define_field(Unknown, name='Unknown', valid_values=[1, 2, 3, 10]),
     Pad1,
-    define_field(Unknown, name='Unknown', valid_values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41 ]),
+    define_field(NumericValue, name='Template index'),
     define_field(TemplateName, name='Name'),
     define_field(Unknown, name='Unknown', valid_values=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49]),
     define_field(ManufacturerName, name='Manufacturer'),
     define_field(SelectValue, name='Channel', valid_values=[0, 16]),
     define_field(SelectValue, name='Midi port | Keyb MIDI Chan', valid_values=[0, 16, 48, 53, 54, 112]),
-    Pad2,
+    define_field(NumericValue, name='Bank'),
+    define_field(NumericValue, name='Program'),
     define_field(SelectValue, name='Velocity curve', valid_values=[0, 1, 2, 3]),
     define_field(NumericValue, name='Octave setting'),
     define_field(SelectValue, name='Aftertouch | Auto Snapshot | Not Synth', valid_values=[0, 1, 2, 3, 4, 5, 6, 7]),
     define_field(NumericValue, name='Override MIDI Channel'),
     define_field(SelectValue, name='Touchpad X Type', valid_values=[0, 1, 2]),
     define_field(SelectValue, name='Touchpad Y Type', valid_values=[0, 1, 2]),
-    define_field(SelectValue, name='Stereo', valid_values=[0, 2]),
+    define_field(SelectValue, name='Stereo', valid_values=[0, 1, 2]),
     Pad1,
     define_field(NumericValue, name='Input 1 - Gain'),
     define_field(NumericValue, name='Input 1 - Pan'),
@@ -614,7 +615,7 @@ class Template():
         other_headers = other.header_fields
         for idx, field in enumerate(self.header_fields):
             if field != other_headers[idx]:
-                template_diffs.append([idx + 77, field, str(field), str(other_headers[idx])])
+                template_diffs.append([idx + 100, field, str(field), str(other_headers[idx])])
 
         other_controls = other.controls
         for idx, control in enumerate(self.controls):

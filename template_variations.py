@@ -30,6 +30,6 @@ variations.sort(key=lambda x: int(x))
 for variation in variations:
     print('%s,' % variation)
     # print('%s: %s %s' % (index, name, variation))
-    # for filename, template in filenames:
-    #     if (str(template.header_fields[field_index]) == variation):
-    #         print('\t', str(filename))
+    for filename, template in filenames:
+        if (str(template.header_fields[field_index]) == variation):
+            print('\t', str(filename))

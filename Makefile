@@ -38,3 +38,6 @@ test: send
 send_and_test: send test
 
 receive: receive_from_device receive_from_remote clean_received convert_to_xlsx
+
+receive_syx: receive_from_device receive_from_remote clean_received
+	mv /tmp/last_received.syx last_received.syx

@@ -167,7 +167,9 @@ class FieldSet():
         if len(sysex) != sum(j.get_length() for j in definition):
             raise Exception('bad length')
 
-        fields = [ct._pop_from(sysex) for ct in definition]
+        fields = []
+        for idx, ct in enumerate(definition):
+            fields.append(ct._pop_from(sysex))
 
         if len(sysex) != 0:
             raise Exception('non parsed fields')
@@ -258,7 +260,7 @@ class FieldSet():
             if value is None:
                 flat_values.append("")
             elif value.startswith("="):
-                match = re.search('\$[A-Z]\$\d+:\$[A-Z]\$\d+,\s*(?P<index>\d+),', value)
+                match = re.search(r"\$[A-Z]\$\d+:\$[A-Z]\$\d+,\s*(?P<index>\d+),", value)
                 field_index = int(match.group('index')) - 2
                 flat_values.append(str(self.fields[field_index]))
             else:
