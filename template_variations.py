@@ -13,6 +13,8 @@ parser.add_argument('field_index', type=int, nargs='+')
 args = parser.parse_args()
 field_index = args.field_index
 
+def to_descriptor(header_fields):
+    return ' '.join([str(header_fields[index]) for index in field_index])
 
 filenames = []
 for root,_,files in os.walk(args.directory):
@@ -21,12 +23,7 @@ for root,_,files in os.walk(args.directory):
             template = Template.from_sysex(file)
             filenames.append([file, template])
 
-def to_descriptor(header_fields):
-    return ' '.join([str(header_fields[index]) for index in field_index])
-
-descriptors = [(filename, to_descriptor(template.header_fields)) for (filename, template) in filenames]
-
-variations = list({'%s' % (descriptor) for _, descriptor in descriptors})
+variations = list({to_descriptor(template.header_fields) for (_, template) in filenames})
 variations.sort()
 
 for variation in variations:
