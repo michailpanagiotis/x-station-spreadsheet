@@ -149,7 +149,9 @@ def define_field(base_cls, num_bytes=None, **defaults):
 class FieldSet():
     @classmethod
     def from_values(cls, definition, values, *args, **kwargs):
-        fields = [ct(values[idx] if values[idx] is not None else "") for idx, ct in enumerate(definition)]
+        fields = []
+        for idx, ct in enumerate(definition):
+            fields.append(ct(values[idx] if values[idx] is not None else "") )
         return cls(fields, *args, **kwargs)
 
     @classmethod
@@ -246,7 +248,9 @@ class FieldSet():
             if value is None:
                 flat_values.append("")
             elif value.startswith("="):
-                match = re.search('\$[A-Z]\$\d+:\$[A-Z]\$\d+,(?P<index>\d+),', value)
+                match = re.search('\$[A-Z]\$\d+:\$[A-Z]\$\d+,\s*(?P<index>\d+),', value)
+                if not match:
+                    print(self, value)
                 field_index = int(match.group('index')) - 2
                 flat_values.append(str(self.fields[field_index]))
             else:

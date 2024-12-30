@@ -23,6 +23,17 @@ def get_control_legend(idx):
     legend = '%s>%s' % (group, indices[idx]['legend'])
     return legend.strip()
 
+def _assert_workbook_sheets_are_same(ws1, ws2, ignore_columns=(1,)):
+    for row in ws1.rows:
+        for cell in row:
+            if cell.column in ignore_columns:
+                continue
+            other_cell = ws2.cell(row=cell.row, column=cell.column)
+            cell_value = cell.value if cell.value is not None else ""
+            other_value = other_cell.value if other_cell.value is not None else ""
+            if cell_value != other_value:
+                raise Exception('difference at cell %s (%s != %s)' % (cell, cell.value, other_cell.value))
+
 Sysex = define_field(NumericArray, num_bytes=18, name="Sysex")
 ControlName = define_field(StringValue, num_bytes=16, name="Name", aliases=['Control name'])
 TemplateName = define_field(StringValue, num_bytes=16)
@@ -277,11 +288,11 @@ KNOWN_TEMPLATES = {
     "Trigger": "1,127,0,01110000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Toggle": "1,0,127,01111000,4,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Momentary": "1,0,127,01110100,0,0,0,0,0,0,000000000000000000000000000000000000,0,4",
-    "Continuous": "1,0,127,01110000,0,0,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Continuous": "1,0,127,01110000,0,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "ContinuousPickup": "1,0,127,01110000,9,64,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Unary": "1,63,64,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
     "Jog": "1,63,65,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
-    "Pitch": "10,0,127,01110000,0,1,0,0,0,0,000000000000000000000000000000000000,0,4",
+    "Pitch": "10,0,127,01110000,0,65,0,0,0,0,000000000000000000000000000000000000,0,4",
     "-": "0,0,127,01110000,0,64,0,0,0,0,000000000000000000000000000000000000,0,4",
 }
 
@@ -474,7 +485,6 @@ class Template():
                 continue
             (legend, template_name, *values) = (c.value for c in row)
             template = templates[template_name]
-            print(values)
             flat_values = template.dereference(values)
             controls.append(SingleControl.from_values(flat_values, index=idx - 1))
         return cls(header_fields, controls)
@@ -482,7 +492,12 @@ class Template():
     @classmethod
     def from_spreadsheet(cls, filename):
         wb = load_workbook(filename=filename)
-        return cls._from_workbook(wb)
+        template = cls._from_workbook(wb)
+        parsed = template._to_workbook()
+        _assert_workbook_sheets_are_same(wb['Template configuration'], parsed['Template configuration'])
+        _assert_workbook_sheets_are_same(wb['Templates'], parsed['Templates'])
+        _assert_workbook_sheets_are_same(wb['Controls'], parsed['Controls'], ignore_columns=(1, 2))
+        return template
 
     @staticmethod
     def extract_templates(controls):
@@ -496,6 +511,7 @@ class Template():
             if match:
                 template.name = match.name
             templates.append(template)
+        templates.sort(key=lambda t: t.bytes)
         return templates
 
     def __templates_to_spreadsheet(self, wb):
@@ -510,7 +526,7 @@ class Template():
             print(template)
         return templates
 
-    def to_spreadsheet(self, filename):
+    def _to_workbook(self):
         wb = Workbook()
         ws = wb.active
         ws.title = "Template configuration"
@@ -536,6 +552,10 @@ class Template():
 
             control.to_spreadsheet(ws, idx + 2, found_template.name)
 
+        return wb
+
+    def to_spreadsheet(self, filename):
+        wb = self._to_workbook()
         wb.save(filename)
         stored = Template._from_workbook(wb)
         wb.close()
