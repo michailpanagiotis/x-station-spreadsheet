@@ -10,10 +10,10 @@ receive_from_device: clean_received
 
 # CONVERSIONS
 convert_to_syx:
-	./convert.py syx $(FILE) --output /tmp/last_sent.syx
+	./convert.py syx "$(FILE)" --output /tmp/last_sent.syx
 
 convert_to_json:
-	./convert.py json $(FILE) --output /tmp/last_sent.json
+	./convert.py json "$(FILE)" --output /tmp/last_sent.json
 
 convert_to_xlsx:
 	./convert.py xlsx /tmp/last_received.syx --output last_received.xlsx

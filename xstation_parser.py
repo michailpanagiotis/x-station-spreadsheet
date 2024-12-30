@@ -325,7 +325,7 @@ def split_sysex(sysex):
     # 52 x 149 = 7748 bytes
     return template_configuration_bytes, controls_bytes
 
-def extract_templates(controls, definition, known):
+def extract_templates(controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES):
     permutations = {bytes(t.get_subset(definition).bytes) for t in controls}
     templates = []
     for idx, x in enumerate(permutations):
@@ -426,11 +426,10 @@ class SingleControl(FieldSet):
         return control
 
 class Template():
-
     def __init__(self, header_fields, controls, sysex=None):
         self.header_fields = header_fields
         self.controls = controls
-        self.templates = extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
+        self.templates = extract_templates(self.controls)
         for idx, control in enumerate(self.controls):
             found_template = next((x for x in self.templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None)
 
@@ -543,12 +542,10 @@ class Template():
         return template
 
     def _to_workbook(self):
-        templates = extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
-
         wb = Workbook()
         create_sheet(wb, "Template configuration", list(zip(self.header_fields.get_headers(), self.header_fields.get_values())))
 
-        templates_table = FieldSet.get_table(templates, with_labels=True)
+        templates_table = FieldSet.get_table(self.templates, with_labels=True)
         create_sheet(wb, "Templates", templates_table)
 
         controls_table = FieldSet.get_table(self.controls, with_labels=True)
@@ -589,12 +586,10 @@ class Template():
         return [control.get_values() for control in self.controls]
 
     def to_sql(self):
-        templates = self.extract_templates(self.controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES)
-
         values = [
             [
                 get_control_legend(idx),
-                next((x.name for x in templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None),
+                next((x.name for x in self.templates if x == control.get_subset(CONTROL_TEMPLATE_FIELDS)), None),
             ] +  control.get_values()
             for idx, control in enumerate(self.controls)
         ]
