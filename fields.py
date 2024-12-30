@@ -209,6 +209,8 @@ class FieldSet():
         return '<%s: %s>' % (self.name, self.csv)
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.fields[key]
         field = next((x for x in self.fields if x.name == key), None)
         if field is None:
             raise KeyError
