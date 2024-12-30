@@ -257,8 +257,6 @@ class FieldSet():
                 flat_values.append("")
             elif value.startswith("="):
                 match = re.search('\$[A-Z]\$\d+:\$[A-Z]\$\d+,\s*(?P<index>\d+),', value)
-                if not match:
-                    print(self, value)
                 field_index = int(match.group('index')) - 2
                 flat_values.append(str(self.fields[field_index]))
             else:
