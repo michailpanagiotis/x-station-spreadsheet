@@ -5,8 +5,8 @@ send_to_device:
 clean_received:
 	ssh nuc_local -t 'command; rm -f /tmp/last_received.syx'
 
-receive_from_device: clean_received
-	ssh nuc_local -t 'command; amidi -r /tmp/last_received.syx -p hw:1,0,0'
+receive_from_device:
+	ssh nuc_local -t 'command; rm -f /tmp/last_received.syx; ~/Projects/x-station-spreadsheet/read.py /tmp/last_received.syx'
 
 # CONVERSIONS
 convert_to_syx:

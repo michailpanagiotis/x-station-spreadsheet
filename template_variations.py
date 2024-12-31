@@ -20,6 +20,7 @@ filenames = []
 for root,_,files in os.walk(args.directory):
     for file in [Path(os.path.join(root, x)).absolute() for x in files]:
         if file.suffix == '.syx':
+            print(file)
             template = Template.from_sysex(file)
             filenames.append([file, template])
 

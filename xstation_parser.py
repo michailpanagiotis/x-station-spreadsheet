@@ -3,6 +3,7 @@ import json
 from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
+from xlsx_utils import replace_with_references, assert_workbook_sheets_are_same, create_sheet
 
 NUM_TEMPLATE_CONFIGURATION_BYTES = 396
 MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
@@ -28,17 +29,6 @@ def get_control_legend(idx):
     group = '%s%s' % (indices[idx]['section'], selector)
     legend = '%s>%s' % (group, indices[idx]['legend'])
     return legend.strip()
-
-def _assert_workbook_sheets_are_same(ws1, ws2, ignore_columns=(1,)):
-    for row in ws1.rows:
-        for cell in row:
-            if cell.column in ignore_columns:
-                continue
-            other_cell = ws2.cell(row=cell.row, column=cell.column)
-            cell_value = cell.value if cell.value is not None else ""
-            other_value = other_cell.value if other_cell.value is not None else ""
-            if cell_value != other_value:
-                raise Exception('difference at cell %s (%s != %s)' % (cell, cell.value, other_cell.value))
 
 def _assert_bytes_are_same(bytes1, bytes2):
     for idx, byte in enumerate(bytes1):
@@ -343,36 +333,6 @@ def extract_templates(controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_
     #     print(template)
     return templates
 
-def replace_with_references(values_table, references_table, from_column, to_column, ignore_headers):
-    reference_headers = references_table[0]
-    headers = values_table[0]
-
-    pointers = {
-        from_idx: to_idx + 1
-        for from_idx, header in enumerate(headers)
-        for to_idx, reference in enumerate(reference_headers)
-        if header==reference and header not in ignore_headers
-    }
-
-    with_references = []
-    for row_idx, row in enumerate(values_table):
-        if row_idx == 0:
-            with_references.append(row)
-        else:
-            row_with_references = [
-                '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_idx + 1, pointers[col_idx]) if col_idx in pointers else x
-                for col_idx, x in enumerate(row)
-            ]
-            with_references.append(row_with_references)
-    return with_references
-
-
-def create_sheet(workbook, sheet_name, values_table):
-    workbook.create_sheet(sheet_name)
-    wst = workbook[sheet_name]
-    for row_idx, row_values in enumerate(values_table):
-        for col_idx, value in enumerate(row_values):
-            wst.cell(row=row_idx + 1, column=col_idx + 1, value=value)
 
 class SingleControl(FieldSet):
     @classmethod
@@ -538,9 +498,9 @@ class Template():
         wb = load_workbook(filename=filename)
         template = cls._from_workbook(wb)
         parsed = template._to_workbook()
-        _assert_workbook_sheets_are_same(wb['Template configuration'], parsed['Template configuration'])
-        _assert_workbook_sheets_are_same(wb['Templates'], parsed['Templates'])
-        _assert_workbook_sheets_are_same(wb['Controls'], parsed['Controls'], ignore_columns=(1, 2))
+        assert_workbook_sheets_are_same(wb['Template configuration'], parsed['Template configuration'])
+        assert_workbook_sheets_are_same(wb['Templates'], parsed['Templates'])
+        assert_workbook_sheets_are_same(wb['Controls'], parsed['Controls'], ignore_columns=(1, 2))
         return template
 
     def _to_workbook(self):
