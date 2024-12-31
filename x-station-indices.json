@@ -522,21 +522,25 @@
   {
     "section": "AMP ENV",
     "legend": "ATTACK",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
     "section": "AMP ENV",
     "legend": "DECAY",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
     "section": "AMP ENV",
     "legend": "SUSTAIN",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
     "section": "AMP ENV",
     "legend": "RELEASE",
+    "selector": "Mod",
     "physical": "Pot"
   },
   {
@@ -618,20 +622,28 @@
     "physical": "Button"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "AMP ENV",
+    "legend": "ATTACK",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "AMP ENV",
+    "legend": "DECAY",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "AMP ENV",
+    "legend": "SUSTAIN",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
-    "section": "",
-    "legend": ""
+    "section": "AMP ENV",
+    "legend": "RELEASE",
+    "selector": "Env 3",
+    "physical": "Pot"
   },
   {
     "section": "MOD ENV",
