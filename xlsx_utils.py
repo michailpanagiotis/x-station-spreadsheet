@@ -13,30 +13,17 @@ def assert_workbook_sheets_are_same(ws1, ws2, ignore_columns=(1,)):
             if cell_value != other_value:
                 raise Exception('difference at cell %s (%s != %s)' % (cell, cell.value, other_cell.value))
 
+def add_references(from_sheet, to_sheet, compare_columns=('B', 'A'), column_refs=(
+    ('D', 'B'), ('E', 'C'), ('F', 'D'), ('G', 'E'), ('H', 'F'), ('I', 'G'), ('J', 'H'), ('N', 'I'), ('O', 'J'), ('P', 'K'), ('Q', 'L'), ('R', 'M'), ('S', 'N'),
+)):
+    target_cell_range = '%s!$%s$2:$P$1001' % (to_sheet.title, compare_columns[1])
+    offset_per_column_letter = {x[0]: to_sheet['%s1' % x[1]].column for x in column_refs}
 
-def replace_with_references(values_table, references_table, from_column, to_column, ignore_headers):
-    reference_headers = references_table[0]
-    headers = values_table[0]
-
-    pointers = {
-        from_idx: to_idx + 1
-        for from_idx, header in enumerate(headers)
-        for to_idx, reference in enumerate(reference_headers)
-        if header==reference and header not in ignore_headers
-    }
-
-    with_references = []
-    for row_idx, row in enumerate(values_table):
-        if row_idx == 0:
-            with_references.append(row)
-        else:
-            row_with_references = [
-                '=IFERROR(VLOOKUP($B%s,Templates!$A$2:$P$1001,%s,0), "")' % (row_idx + 1, pointers[col_idx]) if col_idx in pointers else x
-                for col_idx, x in enumerate(row)
-            ]
-            with_references.append(row_with_references)
-    return with_references
-
+    for row in from_sheet.rows:
+        for cell in row:
+            if cell.row > 1 and cell.column_letter in offset_per_column_letter:
+                offset = offset_per_column_letter[cell.column_letter]
+                cell.value = '=IFERROR(VLOOKUP($B%s,%s,%s,0), "")' % (cell.row, target_cell_range, offset)
 
 def create_sheet(workbook, sheet_name, values_table):
     workbook.create_sheet(sheet_name)

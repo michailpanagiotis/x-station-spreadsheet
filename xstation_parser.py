@@ -3,7 +3,7 @@ import json
 from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
-from xlsx_utils import replace_with_references, assert_workbook_sheets_are_same, create_sheet
+from xlsx_utils import assert_workbook_sheets_are_same, create_sheet, add_references
 
 NUM_TEMPLATE_CONFIGURATION_BYTES = 396
 MESSAGE_START=b'\xf0\x00 )\x02\x00\x7f\x00\x00'
@@ -511,10 +511,11 @@ class Template():
         create_sheet(wb, "Templates", templates_table)
 
         controls_table = FieldSet.get_table(self.controls, with_labels=True)
-        c_with_refs = replace_with_references(controls_table, templates_table, from_column=2, to_column=1, ignore_headers=["Name"])
-        create_sheet(wb, "Controls", c_with_refs)
+        create_sheet(wb, "Controls", controls_table)
 
         del wb['Sheet']
+
+        add_references(wb['Controls'], wb['Templates'])
 
         return wb
 
