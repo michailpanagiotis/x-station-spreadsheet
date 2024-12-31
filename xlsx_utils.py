@@ -105,6 +105,39 @@ def colorize(workbook):
     sheet.column_dimensions["Q"].width = 37
     sheet.column_dimensions["R"].width = 6
     sheet.column_dimensions["S"].width = 6
+    fill_rows(sheet, 2, 3, "99A9FF")
+    fill_rows(sheet, 4, 14, "E3E6FF")
+    fill_rows(sheet, 15, 25, "C7D0FF")
+    fill_rows(sheet, 26, 36, "E3E6FF")
+    fill_rows(sheet, 37, 47, "C7D0FF")
+    fill_rows(sheet, 48, 58, "E3E6FF")
+
+    fill_rows(sheet, 59, 67, "FFC7C7")
+    fill_rows(sheet, 68, 76, "FFDEDE")
+
+    fill_rows(sheet, 77, 80, "FFECAB")
+    fill_rows(sheet, 81, 84, "FFF4CC")
+    fill_rows(sheet, 85, 88, "FFECAB")
+
+    fill_rows(sheet, 89, 96, "E3E6FF")
+    fill_rows(sheet, 106, 113, "E3E6FF")
+
+    fill_rows(sheet, 97, 105, "FFC7C7")
+    fill_rows(sheet, 114, 122, "FFC7C7")
+
+    fill_rows(sheet, 123, 125, "FFECAB")
+    fill_rows(sheet, 126, 128, "FFF4CC")
+    fill_rows(sheet, 129, 131, "FFECAB")
+
+    fill_rows(sheet, 132, 134, "CCFFCE")
+    fill_rows(sheet, 135, 137, "CCFCFF")
+
+    fill_rows(sheet, 138, 139, "E6CACA")
+
+    fill_rows(sheet, 140, 141, "CCFFCE")
+    fill_rows(sheet, 142, 145, "CCFCFF")
+    fill_rows(sheet, 146, 150, "FFC7C7")
+
     for col in sheet.iter_cols(min_row=1, max_row=1):
         for cell in col:
             cell.font = bold
