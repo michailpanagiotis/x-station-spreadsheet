@@ -38,7 +38,7 @@ class RawBytes():
     def parse_string(cls, string):
         raise Exception('not implemented for %s' % cls.__name__)
 
-    def __init__(self, value, name=None, *args, **kwargs):
+    def __init__(self, value, name=None, index=None, *args, **kwargs):
         if value is None:
             raise Exception('value is required')
         if isinstance(value, bytearray) or isinstance(value, bytes):
@@ -50,6 +50,8 @@ class RawBytes():
             if not isinstance(self.bytes, bytearray):
                 raise Exception('parsing should return a bytearray but got %s %s' % (self.bytes, type(self.bytes)))
 
+        self.labels = []
+        self.index = index
         self.name = name if name is not None else type(self).DEFAULTS['name']
         for argname in ['stuffed', 'valid_values', 'aliases']:
             setattr(self, argname, kwargs[argname] if argname in kwargs else type(self).DEFAULTS[argname])
@@ -60,7 +62,7 @@ class RawBytes():
         if len(self.valid_values) > 0:
             for byte in self.bytes:
                if byte not in self.valid_values:
-                    raise Exception('unsupported option for %s (%s)' % (type(self), byte))
+                    raise Exception('unsupported option for %s (idx: %s, %s)' % (type(self), self.index, byte))
 
 
     def __str__(self):
@@ -151,7 +153,7 @@ class FieldSet():
     def from_values(cls, definition, values, *args, **kwargs):
         fields = []
         for idx, ct in enumerate(definition):
-            fields.append(ct(values[idx] if values[idx] is not None else "") )
+            fields.append(ct(values[idx] if values[idx] is not None else "", index=idx) )
         return cls(fields, *args, **kwargs)
 
     @classmethod
@@ -169,7 +171,7 @@ class FieldSet():
 
         fields = []
         for idx, ct in enumerate(definition):
-            fields.append(ct._pop_from(sysex))
+            fields.append(ct._pop_from(sysex, index=idx))
 
         if len(sysex) != 0:
             raise Exception('non parsed fields')
@@ -180,18 +182,13 @@ class FieldSet():
         return [fieldsets[0].get_headers(with_labels)] + [t.get_values(with_labels) for t in fieldsets]
 
     def __init__(self, fields, name=None):
-        self._name = name
         self.fields = fields
         self.labels = []
 
     @property
     def name(self):
         name = next((str(x) for x in self.fields if x.name == 'Name'), None)
-        return name if name else self._name
-
-    @name.setter
-    def name(self, value):
-        self._name = value
+        return name
 
     @property
     def bytes(self):
@@ -208,7 +205,7 @@ class FieldSet():
         return len(self.bytes)
 
     def __str__(self):
-        return '<%s: %s>' % (self.name, self.csv)
+        return self.csv
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -220,6 +217,9 @@ class FieldSet():
 
     def __eq__(self, other):
         return self.bytes == other.bytes
+
+    def __hash__(self):
+        return hash(bytes(self.bytes))
 
     def get_field_names(self):
         return [field.name for field in self.fields]
@@ -267,6 +267,9 @@ class FieldSet():
                 flat_values.append(value)
         return flat_values
 
+    def get_label(self, label_name):
+        name = next((str(_label_value) for (_label_name, _label_value) in self.labels if _label_name == label_name), None)
+        return name
 
 class ControlSet():
     def __init__(self, fieldset_array):

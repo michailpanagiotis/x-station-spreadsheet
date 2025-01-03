@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import json
-from openpyxl.styles import PatternFill, Font
 from openpyxl import Workbook, load_workbook
 from fields import define_field, NumericArray, NumericValue, SelectValue, BitMap, StringValue, ZeroPadding, FieldSet
 from xlsx_utils import assert_workbook_sheets_are_same, create_sheet, add_references, colorize
@@ -84,6 +83,10 @@ CONTROL_TEMPLATE_FIELDS = [
     Sysex,
     define_field(NumericValue, name='Step'),
     Pad4,
+]
+
+CONTROL_TEMPLATE_PHYSICAL_FIELDS = [
+    define_field(NumericValue, name='Display', aliases=['Display type']),
 ]
 
 TEMPLATE_FIELDS = [
@@ -198,7 +201,7 @@ TEMPLATE_FIELDS = [
     define_field(NumericValue, name='Input 2 - Distortion - Level'),
     define_field(NumericValue, name='Input 2 - Distortion - Compensate'),
     define_field(NumericValue, name='Input 2 - Distortion - Output Level'),
-    define_field(Unknown, name='Unknown Flag', valid_values=[0, 65]),
+    define_field(Unknown, name='Unknown Flag', valid_values=[0, 64, 65]),
     Pad2,
     define_field(NumericValue, name='Input 2 - EQ - Low'),
     define_field(NumericValue, name='Input 2 - EQ - High'),
@@ -318,19 +321,16 @@ def split_sysex(sysex):
     return template_configuration_bytes, controls_bytes
 
 def extract_templates(controls, definition=CONTROL_TEMPLATE_FIELDS, known=KNOWN_TEMPLATES):
-    permutations = {bytes(t.get_subset(definition).bytes) for t in controls}
+    permutations = {t.get_subset(definition) for t in controls}
     templates = []
-    for idx, x in enumerate(permutations):
+    for idx, template in enumerate(permutations):
+        if len(template.fields) != len(definition):
+            raise Exception('bad template')
         name = 'template%s' % idx
-        template = FieldSet.from_bytes(definition, bytearray(x), name)
         match = next((x for x in known if x == template), None)
-        if match:
-            template.name = match.name
-        template.add_labels(Name=template.name)
+        template.add_labels(Name=match.name if match else name)
         templates.append(template)
     templates.sort(key=lambda t: t.bytes)
-    # for template in templates:
-    #     print(template)
     return templates
 
 
@@ -398,7 +398,7 @@ class Template():
             if not found_template:
                 raise Exception('unknown template')
 
-            control.add_labels(Legend=get_control_legend(idx), Template=found_template.name)
+            control.add_labels(Legend=get_control_legend(idx), Template=found_template.get_label('Name'))
         self.sysex = sysex
 
     @property
@@ -583,7 +583,7 @@ class Template():
         other_headers = other.header_fields
         for idx, field in enumerate(self.header_fields):
             if field != other_headers[idx]:
-                template_diffs.append([idx + 100, field, str(field), str(other_headers[idx])])
+                template_diffs.append([idx, field, str(field), str(other_headers[idx])])
 
         other_controls = other.controls
         for idx, control in enumerate(self.controls):
@@ -594,5 +594,9 @@ class Template():
                     print(other_controls[idx])
                     field_diffs.append([idx, field_idx, field.name, str(field), str(other_field)])
 
-        print('TEMPLATE DIFFS', template_diffs)
-        print('FIELD DIFFS', field_diffs)
+        if len(template_diffs) > 0:
+            print('TEMPLATE DIFFS')
+            for diff in template_diffs:
+                print("\tRow %s ('%s')  '%s' -> %s" % (diff[0] + 1, diff[1].name, diff[2], diff[3]))
+        if len(field_diffs) > 0:
+            print('FIELD DIFFS', field_diffs)
